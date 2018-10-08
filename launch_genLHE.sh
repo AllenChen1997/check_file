@@ -1,5 +1,5 @@
 #!/bin/bash
-# filename launch_genLHE
+# fileName launch_genLHE
 # built by Kong-Xiang Chen
 # Date 2018/10/08
 #############################
