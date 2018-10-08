@@ -14,5 +14,5 @@ echo "newName="$newName
 
 #produce the py file to run
 sed -e 's/FOLDERNAME/'${newName}'/g' $dictory/genLHE > $dictory/${newName}_genLHE.py
-
+# run the python script
 python $dictory/${newName}_genLHE.py
