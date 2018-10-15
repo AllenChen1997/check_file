@@ -18,6 +18,7 @@ class GetValue():
     	self.lhaid = []
     	self.gener = []
     	self.wh = []
+    	self.sM = []
 
 hAList = []
 hApath = '/home/allen/documents/check_lhe_files/testLHEfile/FOLDERNAME*.lhe' 
@@ -25,12 +26,15 @@ hA_files = glob.glob(hApath)
 
 # Some define of func.
 def getFile(fileName):
-		num = str(fileName).split("_")[2].split('/')[2]
+		num = str(fileName).split('/')[6].split('.')[0]
 		global s
 		s = GetValue()
 		s.fileNum = num
 		#print s.fileNum
 		return s
+def getsM(readLine):
+	sM = float(readLine.strip().split('setID')[1].split('#')[0])
+	return sM
 
 def getLHAID(readLine):
 	LHAID = int(readLine.strip().split('=')[0])
@@ -54,8 +58,8 @@ def gethAList(lhefile):
 	    	try:
 	    	    with open(name) as f: 
 	    	    	for lheFile in f:
-	    	    		if lheFile.find('mzp') > 0 and lheFile.find('32') > 0:
-	    	    			s.zpMass = getMZpValue(lheFile)
+	    	    		if lheFile.find('setParticle') > 0 and lheFile.find('setID') > 0:
+	    	    			s.sM = getsM(lheFile)
 	    	    		elif lheFile.find('lhaid') > 0:
 	    	    			s.lhaid = getLHAID(lheFile)
 	    	    		elif lheFile.find('generate') == 0:
@@ -71,16 +75,16 @@ def gethAList(lhefile):
 def main():
 	hAList = gethAList(hA_files)
 	textLine = []
-	compare = [0,0,0,0]
-	title=["fileName","LHAID","process","wh"]
+	compare = [0,0,0,0,0,0]
+	title=["fileName","LHAID","process","wh","setMassPID","setMass"]
 	for a in hAList:
 		flag = False
-		if (int(a.lhaid)==int(compare[1])and float(a.wh)==float(compare[3])):
+		if (int(a.lhaid)==int(compare[1])and float(a.wh)==float(compare[3])and float(a.sM)==float(compare[5])):
 			flag = True 
-			textLine.append("true")
+			textLine.append(strip(true))
 		if (flag==False): 
-			textLine.append([a.fileNum, a.lhaid, a.gener, a.wh])
-			compare=[a.fileNum, a.lhaid, a.gener, a.wh]
+			textLine.append([a.fileNum, a.lhaid, a.gener, a.wh, "setID", a.sM])
+			compare=[a.fileNum, a.lhaid, a.gener, a.wh, "setID", a.sM]
 	with open("FOLDERNAME_scan.txt", "w") as f:
 		wr = csv.writer(f,delimiter="\t")
 		wr.writerow(title)
