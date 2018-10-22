@@ -42,8 +42,7 @@ void TRootLHEFParticle::Loop()
 	 TH1F *h_hhPhi = new TH1F("h_hhDeltaPhi","h_hhDeltaPhi",40,0,10);
 	 TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
 	 TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
-	 TH1F *h_motherPT_select = (TH1F*) h_motherPT->Clone("h_motherPT_select");
-
+	TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
 //define matrix form hist
     string text[3] = {"higgs1","higgs2","NewResonance"}; // covenient to input names by orders	
     for (int i=0;i<3;i++) {
@@ -63,12 +62,14 @@ void TRootLHEFParticle::Loop()
    for (Int_t jentry=0; jentry<nentries;jentry++) {
        Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
-      Int_t nHiggs = 0, nhh = 0; 
+      Int_t nHiggs = 0, nhh = 0;
+		int nMother = 0; 
       Int_t hIndex[2] = {-1,-1};
       TLorentzVector higgsVect[2];
       //for (int i=0;i<nPar;i++) {
 //the main work --choose particle & record
       for (int i=0;i<Particle_size;i++) {
+				h_PID->Fill(Particle_PID[i]);
 				switch(Particle_PID[i]){
 				case 25: 
 					nhh++; //PID==25 for higgs
@@ -82,16 +83,18 @@ void TRootLHEFParticle::Loop()
 						h_M[nHiggs] = Particle_M[i];
                	nHiggs++;
             	}
-				case motherPID:
-						h_motherM->Fill(Particle_M[i]);
-						h_motherPT->Fill(Particle_PT[i]);
-						if (nHiggs == 1) h_motherPT_select->Fill(Particle_PT[i]);
+					break;
+				case 39:
+					nMother++;
+					h_motherM->Fill(Particle_M[i]);
+					h_motherPT->Fill(Particle_PT[i]);
+					break;
 				}		
 				
       }
 //select entries content over 2 higgs
       if (nhh>2) cout << jentry << endl;
-      h_nH->Fill(nhh);
+      h_nH->Fill(nMother);
 //normally there two values in hIndex showing that it sure has two higgs, so we can continue to record the data.
       if (hIndex[1]>=0&&hIndex[0]>=0) {
         TLorentzVector ResonanceVect = higgsVect[0] + higgsVect[1];
@@ -109,7 +112,13 @@ void TRootLHEFParticle::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
    }
 // save all plots into PDF
-   string pdfName = "BulkGraviton_hh_5perWidth_M2200.pdf";
+   ofstream myfile("tmpfile.txt");
+	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2;
+	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2;
+	if ( (a-b) < 15 )	myfile << "true";
+	else myfile << "False" << " |" << a << " |" << b;
+	myfile.close();
+/*	string pdfName = "BulkGraviton_hh_5perWidth_M2200.pdf";
 	gStyle->SetOptStat(1111111);//check the "outside" value?
    TCanvas *c1 = new TCanvas("c1","c1",3);
    c1->Print((pdfName+"[").data());
@@ -135,8 +144,6 @@ void TRootLHEFParticle::Loop()
 	c1->Print(pdfName.data());
 	h_motherPT->Draw("hist");
 	c1->Print(pdfName.data());
-	h_motherPT_select->Draw("hist");
-	c1->Print(pdfName.data());
 // RooFit
    using namespace RooFit;
    RooRealVar x("x","new Resonance (GeV)",500,3500);
@@ -159,5 +166,5 @@ void TRootLHEFParticle::Loop()
    cout << fitFun.getVal() << endl;
    cout << fitFun.getVal(x) << endl;
    cout << fitFun.getVal(mean) << endl;
-   cout << fitFun.getVal(width) << endl;
+   cout << fitFun.getVal(width) << endl; */ 
 }

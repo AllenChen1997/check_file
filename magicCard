@@ -1,0 +1,8 @@
+This file is use to modify the strings in python script
+Notice that no space after the ":"
+Notice only modify the words after the ":"
+
+the place of the lhe and root file:./testLHEfile
+the key word of the lhe file and the root file:B
+the setting mass particle name in lhe after #:mgr
+the setting mass PID:39
