@@ -3,7 +3,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID 39
+#define motherPID 35
 float kinePP(float m1, float m2, float M){
 	float pp;
 	pp = TMath::Sqrt( (M*M-(m1+m2)*(m1+m2) )*(M*M-(m1-m2)*(m1-m2) ) )/2/M;
@@ -48,9 +48,7 @@ void TRootLHEFParticle::Loop()
 	 TH1F *h_hheta = new TH1F("h_hhDeltaEta","h_hhDeltaEta",40,0,10);
 	 TH1F *h_hhPhi = new TH1F("h_hhDeltaPhi","h_hhDeltaPhi",40,0,10);
 	 TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
-	 float motherM;
 	 TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
-	 float motherPz;
 	 TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
 	 TH1F *h_count = new TH1F("h_count","h_count",2,0,2);
 //define matrix form hist
@@ -64,9 +62,13 @@ void TRootLHEFParticle::Loop()
     }
 //some define variables
 	//for delta eta
-	 double h_eta[2];
+	 double higgsEta[2];
 	//for hhM
-	 double h_M[2];
+	 double higgsM[2];
+	//for mother particle
+	 float motherM;
+	 float motherE;
+	 float motherPz;
 //origin code for reading root file & compute size of file
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nbytes = 0, nb = 0;
@@ -91,14 +93,15 @@ void TRootLHEFParticle::Loop()
                	h_higgsRap[nHiggs]->Fill(Particle_Rapidity[i]);
                	higgsVect[nHiggs].SetPxPyPzE(Particle_Px[i],Particle_Py[i],Particle_Pz[i],Particle_E[i]);
                	hIndex[nHiggs] = i;
-						h_eta[nHiggs] = Particle_Eta[i];
-						h_M[nHiggs] = Particle_M[i];
+						higgsEta[nHiggs] = Particle_Eta[i];
+						higgsM[nHiggs] = Particle_M[i];
                	nHiggs++;
             	}
 					break;
 				case motherPID:
 					nMother++;
 					motherM = Particle_M[i];
+					motherE = Particle_E[i];
 					motherPz = Particle_Pz[i];
 					h_motherM->Fill(Particle_M[i]);
 					h_motherPT->Fill(Particle_PT[i]);
@@ -114,24 +117,24 @@ void TRootLHEFParticle::Loop()
         TLorentzVector ResonanceVect = higgsVect[0] + higgsVect[1];
         h_higgsPt[2]->Fill(ResonanceVect.Pt());
         h_higgsPz[2]->Fill(ResonanceVect.Pz());
-		  float kineTemp = kinePP(float(h_M[0]),float(h_M[1]),motherM);
+		  float kineTemp = kinePP(float(higgsM[0]),float(higgsM[1]),motherM);
 		  h_higgsP[2]->Fill(kineTemp);
         h_higgsRap[2]->Fill(Particle_Rapidity[hIndex[0]]+Particle_Rapidity[hIndex[1]]);
         h_hhDeltaR->Fill(higgsVect[0].DeltaR(higgsVect[1]));	
         h_hhM->Fill((higgsVect[0]+higgsVect[1]).M());
-		  if (h_eta[0]>h_eta[1]) h_hheta->Fill( h_eta[0]-h_eta[1] );
-		  else h_hheta->Fill( h_eta[1]-h_eta[0] );
+		  if (higgsEta[0]>higgsEta[1]) h_hheta->Fill( higgsEta[0]-higgsEta[1] );
+		  else h_hheta->Fill( higgsEta[1]-higgsEta[0] );
 		  h_hhPhi->Fill(higgsVect[0].DeltaPhi(higgsVect[1]));
 		  //do Lorentz boost to the Mother particle's rest frame
-		  higgsVect[0].Boost(0,0,(float)-1.0*motherPz/motherM);
-		  higgsVect[1].Boost(0,0,(float)-1.0*motherPz/motherM);
+		  higgsVect[0].Boost(0,0,(float)-1.0*motherPz/motherE);
+		  higgsVect[1].Boost(0,0,(float)-1.0*motherPz/motherE);
 		  h_higgsP[0]->Fill(higgsVect[0].P());
 		  h_higgsP[1]->Fill(higgsVect[1].P());
-		  //if (higgsVect[0].P() == kineTemp and higgsVect[1].P() == kineTemp )  h_count->Fill(0);
-		  //else {
-			//	h_count->Fill(1);
-				std::cout << kineTemp << " | " << (float)higgsVect[0].P() << " | " << (float)higgsVect[1].P() << std::endl;
-		  //}
+		  if ( (higgsVect[0].P() - kineTemp) < 0.01 and (higgsVect[1].P() - kineTemp) < 0.01 )  h_count->Fill(0);
+		  else {
+				h_count->Fill(1);
+				std::cout << "kine= " << kineTemp << " |p1= " << (float)higgsVect[0].P() << " |p2= " << (float)higgsVect[1].P() << " |i= " << jentry << std::endl;
+		  }
       }
       //if (jentry%100) cout << "ggg  " << ientry << "\t" << jentry << endl;
       // if (Cut(ientry) < 0) continue;
@@ -143,12 +146,15 @@ void TRootLHEFParticle::Loop()
 	h_higgsP[2]->Draw("SAME");
 	new TCanvas;
 	h_count->Draw();
+int kineResultT = h_count->GetBinContent(1);
+int kineResultF = h_count->GetBinContent(2);
 // save all plots into PDF
    ofstream myfile("tmpfile.txt");
+	myfile << "there are " << kineResultF << " fails in total " << kineResultT+kineResultF << " entries\n";
 	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2;
 	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2;
-	if ( (a-b) < 15 )	myfile << "true";
-	else myfile << "False" << " |" << a << " |" << b;
+	if ( (a-b) < 15 )	myfile << "mass test: true";
+	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
 	myfile.close();
 /*	string pdfName = "BulkGraviton_hh_5perWidth_M2200.pdf";
 	gStyle->SetOptStat(1111111);//check the "outside" value?
