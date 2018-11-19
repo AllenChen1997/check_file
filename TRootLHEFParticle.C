@@ -3,8 +3,9 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID 35
-float kinePP(float m1, float m2, float M){
+#define motherPID 39
+
+float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
 	pp = TMath::Sqrt( (M*M-(m1+m2)*(m1+m2) )*(M*M-(m1-m2)*(m1-m2) ) )/2/M;
 	return ( float(pp) );
@@ -38,7 +39,7 @@ void TRootLHEFParticle::Loop()
 
    if (fChain == 0) return;
 //add some hist.
-   TH1F *h_higgsPt[3];
+    TH1F *h_higgsPt[3];
     TH1F *h_higgsPz[3];
 	 TH1F *h_higgsP[3];
     TH1F *h_higgsRap[3];
@@ -50,7 +51,7 @@ void TRootLHEFParticle::Loop()
 	 TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
 	 TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
 	 TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
-	 TH1F *h_count = new TH1F("h_count","h_count",2,0,2);
+	 TH1F *h_count = new TH1F("h_count","0 for strange momentum, 1 for no mother particle in entries",2,0,2);
 //define matrix form hist
     string text[3] = {"higgs1","higgs2","NewResonance"}; // covenient to input names by orders	
 	 string text_2[3] = {"higgs1","higgs2","kine"};
@@ -65,21 +66,24 @@ void TRootLHEFParticle::Loop()
 	 double higgsEta[2];
 	//for hhM
 	 double higgsM[2];
-	//for mother particle
-	 float motherM;
-	 float motherE;
-	 float motherPz;
+
 //origin code for reading root file & compute size of file
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nbytes = 0, nb = 0;
     const Int_t nPar = kMaxParticle;
+// run all of the entries
     for (Int_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       Int_t nHiggs = 0, nhh = 0;
 		int nMother = 0; 
+	//for mother particle
+	 	float motherM;
+	 	float motherE;
+	 	float motherPz;
+	 	int motherCheck = -1; //-1 means no mother 0 means having		
       Int_t hIndex[2] = {-1,-1};
-      TLorentzVector higgsVect[2];
+      TLorentzVector higgsVect[2];	
       //for (int i=0;i<nPar;i++) {
 //the main work --choose particle & record
       for (int i=0;i<Particle_size;i++) {
@@ -103,12 +107,13 @@ void TRootLHEFParticle::Loop()
 					motherM = Particle_M[i];
 					motherE = Particle_E[i];
 					motherPz = Particle_Pz[i];
+					motherCheck = 0; 
 					h_motherM->Fill(Particle_M[i]);
 					h_motherPT->Fill(Particle_PT[i]);
 					break;
 				}		
 				
-      }
+      }//end of scan particle in one entry
 //select entries content over 2 higgs
       if (nhh>2) cout << jentry << endl;
       h_nH->Fill(nMother);
@@ -126,13 +131,16 @@ void TRootLHEFParticle::Loop()
 		  else h_hheta->Fill( higgsEta[1]-higgsEta[0] );
 		  h_hhPhi->Fill(higgsVect[0].DeltaPhi(higgsVect[1]));
 		  //do Lorentz boost to the Mother particle's rest frame
+		  if (motherCheck == -1) {
+				std::cout << jentry << " there is no mother particle in this entry." << std::endl;// print out the entries don't have mother particle
+				h_count->Fill(1);
+		  }
 		  higgsVect[0].Boost(0,0,(float)-1.0*motherPz/motherE);
 		  higgsVect[1].Boost(0,0,(float)-1.0*motherPz/motherE);
 		  h_higgsP[0]->Fill(higgsVect[0].P());
 		  h_higgsP[1]->Fill(higgsVect[1].P());
-		  if ( (higgsVect[0].P() - kineTemp) < 0.01 and (higgsVect[1].P() - kineTemp) < 0.01 )  h_count->Fill(0);
-		  else {
-				h_count->Fill(1);
+		  if ( (higgsVect[0].P() - kineTemp)*(higgsVect[0].P() - kineTemp) > 0.001 and (higgsVect[1].P() - kineTemp)*(higgsVect[1].P() - kineTemp) > 0.001 ) {
+			   h_count->Fill(0);
 				std::cout << "kine= " << kineTemp << " |p1= " << (float)higgsVect[0].P() << " |p2= " << (float)higgsVect[1].P() << " |i= " << jentry << std::endl;
 		  }
       }
@@ -148,11 +156,11 @@ void TRootLHEFParticle::Loop()
 	h_count->Draw();
 int kineResultT = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
-// save all plots into PDF
+// save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
-	myfile << "there are " << kineResultF << " fails in total " << kineResultT+kineResultF << " entries\n";
-	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2;
-	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2;
+	myfile << "there are " << kineResultF << " fails in total " << nentries << " entries\n";
+	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
+	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
 	if ( (a-b) < 15 )	myfile << "mass test: true";
 	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
 	myfile.close();
@@ -181,12 +189,12 @@ int kineResultF = h_count->GetBinContent(2);
 	h_motherM->Draw("hist");
 	c1->Print(pdfName.data());
 	h_motherPT->Draw("hist");
-	c1->Print(pdfName.data());
+	c1->Print(pdfName.data()); */
 // RooFit
    using namespace RooFit;
    RooRealVar x("x","new Resonance (GeV)",500,3500);
    RooDataHist data("data","new Resonance",x,h_hhM);
-   RooRealVar mean("mean","mean",2000,6000);
+   RooRealVar mean("mean","mean",500,3500);
    RooRealVar width("width","width",0,500);
    RooBreitWigner fitFun("fit","fit",x,mean,width);
    fitFun.fitTo(data);
@@ -196,13 +204,15 @@ int kineResultF = h_count->GetBinContent(2);
    //fitFun.paramOn(xframe,RooArgSet(mean,width));
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
+	new TCanvas;
    xframe->Draw();
-   c1->SetLeftMargin(0.15);
-   c1->Print(pdfName.data());
+   //c1->SetLeftMargin(0.15);	
+   //c1->Print(pdfName.data());
    
-   c1->Print((pdfName+"]").data());
-   cout << fitFun.getVal() << endl;
-   cout << fitFun.getVal(x) << endl;
-   cout << fitFun.getVal(mean) << endl;
-   cout << fitFun.getVal(width) << endl; */ 
+   //c1->Print((pdfName+"]").data());
+   //cout << "roofit_part1\n" << fitFun.getVal() << endl;
+   //cout << "roofit_part2\n" << fitFun.getVal(x) << endl;
+   cout << "mean = " << mean.getVal() << endl;
+   cout << "width = " << width.getVal() << endl; 
+	cout << "width/mean = " <<  width.getVal() / mean.getVal() << endl;
 }
