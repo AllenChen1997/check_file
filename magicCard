@@ -1,8 +1,16 @@
 This file is use to modify the strings in python script
 Notice that no space after the ":"
 Notice only modify the words after the ":"
-
-the place of the lhe and root file:./testLHEfile
-the key word of the lhe file and the root file:B
-the setting mass particle name in lhe after #:mgr
-the setting mass PID:39
+the setting for find files:
+	the #place of the lhe and root file:../testLHEfile
+	the #key word of the lhe file and the root file:B
+the setting for param cards
+	the setting mass #particle name in lhe after #:mgr
+	the setting mass #PID:39
+----------------------------------------------------------
+- check list (can modify after :) (use "|" as delimiter) 
+	#list: lhaid | process | wh | setting mass
+	#list length: 3
+---------------------------------------------------------
+- compare values (you delete # in the line for setting comparing firt file to others) 
+	#compare: 320900 | pp>y>HH | 6.382339e-03
