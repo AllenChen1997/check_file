@@ -1,16 +1,30 @@
 This file is use to modify the strings in python script
-Notice that no space after the ":"
 Notice only modify the words after the ":"
-the setting for find files:
-	the #place of the lhe and root file:../testLHEfile
-	the #key word of the lhe file and the root file:B
-the setting for param cards
-	the setting mass #particle name in lhe after #:mgr
-	the setting mass #PID:39
+
+- the setting for find files
+	the #place of the lhe and root file: ./testLHEfile
+	the #key word of the lhe file and the root file: B
+	the mother particle ID #PID: 39
 ----------------------------------------------------------
-- check list (can modify after :) (use "|" as delimiter) 
-	#list: lhaid | process | wh | setting mass
-	#list length: 3
----------------------------------------------------------
-- compare values (you delete # in the line for setting comparing firt file to others) 
-	#compare: 320900 | pp>y>HH | 6.382339e-03
+- check list 
+How to use:
+1. use "|" as delimiter 
+2. use the name in the lhe file/param cards
+P.S if there are some error with the setting list, you can add # just like themself look like in the lhe file
+(Ex:       4 0.000000e+00 # mc  -> so we choose # mc or mc (if mc is ok.) )
+(the multiple compare list Ex: #mgr | # mb )
+
+	#mass list: # mgr
+	#mass compare: 2200 
+
+	#mass width list: wh
+	#mass width compare: 6.382339e-03 
+
+	#PDF weight: 315200-315300 | 263400
+----------------------------------------------------------
+- other default compare values 
+ 
+	#lhaid: 320900 
+	#process: pp>y>HH 
+----------------------------------------------------------
+- want to run #root analysis?(Y or N) :N
