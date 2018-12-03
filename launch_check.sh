@@ -153,16 +153,19 @@ if [ $willRoo = "N" ]; then
 	echo "process done"
 	exit 1
 fi
+	echo "start root analysis"
+	echo "the result in root analysis" >> ${newName}_scan.txt
+	> tmpfile.txt
 	# change the mother PID in .C file
 	placeInC=$(grep -n "define motherPID" ./TRootLHEFParticle.C|cut -d ":" -f 1) #find the line we want to change
-	sed -i ${placeInC}'a #define motherPID '$SetID ./TRootLHEFParticle.C
-	sed -i ${placeInC}d ./TRootLHEFParticle.C
+	sed -i "${placeInC}a #define motherPID ${SetID}" ./TRootLHEFParticle.C
+	sed -i "${placeInC}d" ./TRootLHEFParticle.C
 	# run root
 	rootName=$(find $place -type f -name "$keyWord*.root")
 	for b in $rootName; do
 		stringP=$(grep -n string TRootLHEFParticle.h|cut -d ':' -f 1)
-		sed -i ''${stringP}'a \   \string fileName = "'${b}'";' TRootLHEFParticle.h
-		sed -i "${stringP}d" TRootLHEFParticle.h
+		sed -i ''${stringP}'a \   \string fileName = "'${b}'";' ./TRootLHEFParticle.h
+		sed -i "${stringP}d" ./TRootLHEFParticle.h
 		expect -c 'spawn -noecho root -l TRootLHEFParticle.C
 		        send "TRootLHEFParticle t\r"
 				  send "t.Loop()\r"
@@ -170,10 +173,11 @@ fi
 				  interact'
 	# output
 		ans1=$(grep "mass test" ./tmpfile.txt)
-		ans2=$(grep "fail" ./tmpfile.txt|cut -d ":" -f 2)
-		sed -i "/the check/a $ans2"  ./${newName}_scan.txt
-		sed -i "/the check/a $ans1" ./${newName}_scan.txt
-		sed -i "/the check/a ${b}" ./${newName}_scan.txt
+		ans2=$(grep "fail" ./tmpfile.txt)
+		echo " " >> ${newName}_scan.txt
+		echo -n " $b;" >> ${newName}_scan.txt
+		echo -n " $ans1;" >> ${newName}_scan.txt
+		echo -n " $ans2;" >> ${newName}_scan.txt
 	done
 	echo "${newName}_scan.txt has build"
 	echo "process done"
