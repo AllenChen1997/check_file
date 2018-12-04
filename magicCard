@@ -2,9 +2,11 @@ This file is use to modify the strings in python script
 Notice only modify the words after the ":"
 
 - the setting for find files
-	the #place of the lhe and root file: ./testLHEfile
-	the #key word of the lhe file and the root file: B
-	the mother particle ID #PID: 39
+	
+	the #place of the lhe and root file: ./forDCS
+	the #save file name: test_scan
+	the mother particle ID #PID: 35
+
 ----------------------------------------------------------
 - check list 
 How to use:
@@ -13,18 +15,29 @@ How to use:
 P.S if there are some error with the setting list, you can add # just like themself look like in the lhe file
 (Ex:       4 0.000000e+00 # mc  -> so we choose # mc or mc (if mc is ok.) )
 (the multiple compare list Ex: #mgr | # mb )
+		*******************************************************************************************
+		* if the file name looks like:																				*
+		* job_Zprime_A0h_A0chichi_MZp600_MA0300_slc6_amd64_gcc481_CMSSW_7_1_30_tarball.tar.xz.lhe	*
+		*  1    2     3     4       5      6     7     8     9      10  ...								*
+		* choose the mass compare place: 5 | 6   																	*
+		* for the check (mzp | ma0) value 																			*
+		*******************************************************************************************
 
-	#mass list: # mgr
-	#mass compare: 2200 
+	#mass list: # mzp
+	#mass compare value place: 5
 
-	#mass width list: wh
-	#mass width compare: 6.382339e-03 
+	#mass width list:
+	#mass width compare:
 
-	#PDF weight: 315200-315300 | 263400
+----------------------------------------------------------
+- PDF weight check
+	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
+
+	#PDF weight:
 ----------------------------------------------------------
 - other default compare values 
  
-	#lhaid: 320900 
-	#process: pp>y>HH 
+	#lhaid:
+	#process:
 ----------------------------------------------------------
 - want to run #root analysis?(Y or N) :N
