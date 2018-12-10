@@ -1,43 +1,51 @@
 This file is use to modify the strings in python script
-Notice only modify the words after the ":"
+the options will look like "#option: value", and only modify the words after the ":"
+if you let the options empty, it means pass that check.
 
 - the setting for find files
-	
-	the #place of the lhe and root file: ./forDCS
-	the #save file name: test_scan
-	the mother particle ID #PID: 35
+if all the lhe file are in the different directorys, but all the directorys are in the same directory.
+	you can use that directory as the choosen place
+the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *
 
+	#the place of the lhe and root file: ./testLHEfile/
+	#name for lhe: R*.lhe
+	#name for root: R*.root	
+	#the save file name: Radion_scan
+	#the mother particle ID PID: 35
+	
 ----------------------------------------------------------
 - check list 
 How to use:
 1. use "|" as delimiter 
 2. use the name in the lhe file/param cards
-P.S if there are some error with the setting list, you can add # just like themself look like in the lhe file
-(Ex:       4 0.000000e+00 # mc  -> so we choose # mc or mc (if mc is ok.) )
+(Ex:       4 0.000000e+00 # mc  -> so we choose # mc )
 (the multiple compare list Ex: #mgr | # mb )
+
 		*******************************************************************************************
-		* if the file name looks like:																				*
+		* if the file name looks like:(use "_" as delimeter) 													*
 		* job_Zprime_A0h_A0chichi_MZp600_MA0300_slc6_amd64_gcc481_CMSSW_7_1_30_tarball.tar.xz.lhe	*
 		*  1    2     3     4       5      6     7     8     9      10  ...								*
 		* choose the mass compare place: 5 | 6   																	*
-		* for the check (mzp | ma0) value 																			*
+		* for the check (mzp | ma0) setting mass value 															*
 		*******************************************************************************************
 
-	#mass list: # mzp
-	#mass compare value place: 5
+	#mass list:
+	#mass compare value place: 
 
-	#mass width list:
+	#mass width list:  
 	#mass width compare:
 
 ----------------------------------------------------------
 - PDF weight check
 	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
 
-	#PDF weight:
+	#PDF weight: 
+315200-315300 | 263400
 ----------------------------------------------------------
 - other default compare values 
  
 	#lhaid:
 	#process:
 ----------------------------------------------------------
-- want to run #root analysis?(Y or N) :N
+
+- #want to run root analysis?(Y or N) :Y

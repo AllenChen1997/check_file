@@ -3,7 +3,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID 39
+#define motherPID  39
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -37,87 +37,90 @@ void TRootLHEFParticle::Loop()
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
 
-   if (fChain == 0) return;
+	if (fChain == 0) return;
+
 //add some hist.
-    TH1F *h_higgsPt[3];
-    TH1F *h_higgsPz[3];
-	 TH1F *h_higgsP[3];
-    TH1F *h_higgsRap[3];
-    TH1F *h_nH = new TH1F("h_nH","h_nH",8,-0.5,7.5);
-    TH1F *h_hhDeltaR = new TH1F("h_hhDeltaR","h_hhDeltaR",60,2,5);
-    TH1F *h_hhM = new TH1F("h_hhNewResonanceM","h_hhNewResonanceM",100,500,3500);
-	 TH1F *h_hheta = new TH1F("h_hhDeltaEta","h_hhDeltaEta",40,0,10);
-	 TH1F *h_hhPhi = new TH1F("h_hhDeltaPhi","h_hhDeltaPhi",40,0,10);
-	 TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
-	 TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
-	 TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
-	 TH1F *h_count = new TH1F("h_count","0 for strange momentum, 1 for no mother particle in entries",2,0,2);
+	TH1F *h_higgsPt[3];
+	TH1F *h_higgsPz[3];
+	TH1F *h_higgsP[3];
+   TH1F *h_higgsRap[3];
+   TH1F *h_nH = new TH1F("h_nH","h_nH",8,-0.5,7.5);
+   TH1F *h_hhDeltaR = new TH1F("h_hhDeltaR","h_hhDeltaR",60,2,5);
+   TH1F *h_hhM = new TH1F("h_hhNewResonanceM","h_hhNewResonanceM",100,500,3500);
+	TH1F *h_hheta = new TH1F("h_hhDeltaEta","h_hhDeltaEta",40,0,10);
+	TH1F *h_hhPhi = new TH1F("h_hhDeltaPhi","h_hhDeltaPhi",40,0,10);
+	TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
+	TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
+	TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
+	TH1F *h_count = new TH1F("h_count","0 for strange momentum, 1 for no mother particle in entries",2,0,2);
+	TH1F *h_cos = new TH1F("h_costheta*","h_costheta*",200,-1,1);
+
 //define matrix form hist
-    string text[3] = {"higgs1","higgs2","NewResonance"}; // covenient to input names by orders	
-	 string text_2[3] = {"higgs1","higgs2","kine"};
-    for (int i=0;i<3;i++) {
-        h_higgsPt[i] = new TH1F(Form("h_%sPt",text[i].data()),Form("h_%sPt",text[i].data()),40,0,2000);
-        h_higgsPz[i] = new TH1F(Form("h_%sPz",text[i].data()),Form("h_%sPz",text[i].data()),40,-2000,2000);
-        h_higgsRap[i] = new TH1F(Form("h_%sRapidity",text[i].data()),Form("h_%sRapidity",text[i].data()),60,-3,3);
-		  h_higgsP[i] = new TH1F(Form("h_%sP",text_2[i].data()),Form("h_%sP",text_2[i].data()),80,0,2000);
-    }
+   string text[3] = {"higgs1","higgs2","NewResonance"}; // covenient to input names by orders	
+	string text_2[3] = {"higgs1","higgs2","kine"};
+   for (int i=0;i<3;i++) {
+   	h_higgsPt[i] = new TH1F(Form("h_%sPt",text[i].data()),Form("h_%sPt",text[i].data()),40,0,2000);
+   	h_higgsPz[i] = new TH1F(Form("h_%sPz",text[i].data()),Form("h_%sPz",text[i].data()),40,-2000,2000);
+   	h_higgsRap[i] = new TH1F(Form("h_%sRapidity",text[i].data()),Form("h_%sRapidity",text[i].data()),60,-3,3);
+		h_higgsP[i] = new TH1F(Form("h_%sP",text_2[i].data()),Form("h_%sP",text_2[i].data()),80,0,2000);
+   }
 //some define variables
 	//for delta eta
-	 double higgsEta[2];
+	double higgsEta[2];
 	//for hhM
-	 double higgsM[2];
+	double higgsM[2];
 
-//origin code for reading root file & compute size of file
-    Long64_t nentries = fChain->GetEntriesFast();
-    Long64_t nbytes = 0, nb = 0;
-    const Int_t nPar = kMaxParticle;
+	//origin code for reading root file & compute size of file
+	Long64_t nentries = fChain->GetEntriesFast();
+   Long64_t nbytes = 0, nb = 0;
+   const Int_t nPar = kMaxParticle;
 // run all of the entries
-    for (Int_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
+   for (Int_t jentry=0; jentry<nentries;jentry++) {
+	   Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       Int_t nHiggs = 0, nhh = 0;
 		int nMother = 0; 
-	//for mother particle
+	//setting mother particle params
 	 	float motherM;
 	 	float motherE;
 	 	float motherPz;
-	 	int motherCheck = -1; //-1 means no mother 0 means having		
+	 	int motherCheck = -1; //-1 means no mother; 0 means having		
       Int_t hIndex[2] = {-1,-1};
       TLorentzVector higgsVect[2];	
-      //for (int i=0;i<nPar;i++) {
-//the main work --choose particle & record
-      for (int i=0;i<Particle_size;i++) {
-				h_PID->Fill(Particle_PID[i]);
-				switch(Particle_PID[i]){
-				case 25: 
-					nhh++; //PID==25 for higgs
-            	if (nHiggs<2) {
-               	h_higgsPt[nHiggs]->Fill(Particle_PT[i]);
-               	h_higgsPz[nHiggs]->Fill(Particle_Pz[i]);
-               	h_higgsRap[nHiggs]->Fill(Particle_Rapidity[i]);
-               	higgsVect[nHiggs].SetPxPyPzE(Particle_Px[i],Particle_Py[i],Particle_Pz[i],Particle_E[i]);
-               	hIndex[nHiggs] = i;
-						higgsEta[nHiggs] = Particle_Eta[i];
-						higgsM[nHiggs] = Particle_M[i];
-               	nHiggs++;
-            	}
-					break;
-				case motherPID:
-					nMother++;
-					motherM = Particle_M[i];
-					motherE = Particle_E[i];
-					motherPz = Particle_Pz[i];
-					motherCheck = 0; 
-					h_motherM->Fill(Particle_M[i]);
-					h_motherPT->Fill(Particle_PT[i]);
-					break;
-				}		
-				
-      }//end of scan particle in one entry
-//select entries content over 2 higgs
+
+	//the main work --choose particle & record
+		for (int i=0;i<Particle_size;i++) {
+			h_PID->Fill(Particle_PID[i]);
+			switch(Particle_PID[i]){
+			case 25: 
+				nhh++; //PID==25 for higgs
+           	if (nHiggs<2) {
+              	h_higgsPt[nHiggs]->Fill(Particle_PT[i]);
+              	h_higgsPz[nHiggs]->Fill(Particle_Pz[i]);
+              	h_higgsRap[nHiggs]->Fill(Particle_Rapidity[i]);
+              	higgsVect[nHiggs].SetPxPyPzE(Particle_Px[i],Particle_Py[i],Particle_Pz[i],Particle_E[i]);
+              	hIndex[nHiggs] = i;
+					higgsEta[nHiggs] = Particle_Eta[i];
+					higgsM[nHiggs] = Particle_M[i];
+              	nHiggs++;
+           	}
+				break;
+			case motherPID:
+				nMother++;
+				motherM = Particle_M[i];
+				motherE = Particle_E[i];
+				motherPz = Particle_Pz[i];
+				motherCheck = 0; 
+				h_motherM->Fill(Particle_M[i]);
+				h_motherPT->Fill(Particle_PT[i]);
+				break;
+			}		
+		}//end of scan particle in one entry
+
+	//select entries content over 2 higgs
       if (nhh>2) cout << jentry << endl;
       h_nH->Fill(nMother);
-//normally there two values in hIndex showing that it sure has two higgs, so we can continue to record the data.
+		//normally there two values in hIndex showing that it sure has two higgs, so we can continue to record the data.
       if (hIndex[1]>=0&&hIndex[0]>=0) {
         TLorentzVector ResonanceVect = higgsVect[0] + higgsVect[1];
         h_higgsPt[2]->Fill(ResonanceVect.Pt());
@@ -132,64 +135,44 @@ void TRootLHEFParticle::Loop()
 		  h_hhPhi->Fill(higgsVect[0].DeltaPhi(higgsVect[1]));
 		  //do Lorentz boost to the Mother particle's rest frame
 		  if (motherCheck == -1) {
-				std::cout << jentry << " there is no mother particle in this entry." << std::endl;// print out the entries don't have mother particle
+			//	std::cout << jentry << " there is no mother particle in this entry." << std::endl;// print out the entries don't have mother particle
 				h_count->Fill(1);
 		  }
 		  higgsVect[0].Boost(0,0,(float)-1.0*motherPz/motherE);
 		  higgsVect[1].Boost(0,0,(float)-1.0*motherPz/motherE);
+		  float theta=TMath::ATan(higgsVect[0].Pt()/ higgsVect[0].Pz() );
+		  h_cos->Fill( higgsVect[0].Pz()/ higgsVect[0].P() );
+		  //if ( theta > 1.57 || theta < -1.57 ) std::cout << cos(TMath::ATan(higgsVect[0].Pt()/ higgsVect[0].Pz() ) ) << " | theta= " << theta << std::endl;
+		  //h_cos[1]->Draw("SAME");
+			
 		  h_higgsP[0]->Fill(higgsVect[0].P());
 		  h_higgsP[1]->Fill(higgsVect[1].P());
 		  if ( (higgsVect[0].P() - kineTemp)*(higgsVect[0].P() - kineTemp) > 0.001 and (higgsVect[1].P() - kineTemp)*(higgsVect[1].P() - kineTemp) > 0.001 ) {
 			   h_count->Fill(0);
-				std::cout << "kine= " << kineTemp << " |p1= " << (float)higgsVect[0].P() << " |p2= " << (float)higgsVect[1].P() << " |i= " << jentry << std::endl;
+			//	std::cout << "kine= " << kineTemp << " |p1= " << (float)higgsVect[0].P() << " |p2= " << (float)higgsVect[1].P() << " |i= " << jentry << std::endl;
 		  }
       }
-      //if (jentry%100) cout << "ggg  " << ientry << "\t" << jentry << endl;
-      // if (Cut(ientry) < 0) continue;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
    }
 // print out the result 
-	h_higgsP[0]->Draw();
-	h_higgsP[1]->Draw("SAME");
-	h_higgsP[2]->Draw("SAME");
+	gStyle->SetOptStat(1111111);//check the "outside" value?
+//	h_higgsP[0]->Draw();
+//	h_higgsP[1]->Draw("SAME");
+//	h_higgsP[2]->Draw("SAME");
+	h_cos->Draw();
 	new TCanvas;
 	h_count->Draw();
 int kineResultT = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
-	myfile << "there are " << kineResultF << " fails in total " << nentries << " entries\n";
+	myfile << "there are " << kineResultF << " without mother particle in total " << nentries << " entries\n";
 	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
 	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
 	if ( (a-b) < 15 )	myfile << "mass test: true";
 	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
 	myfile.close();
-/*	string pdfName = "BulkGraviton_hh_5perWidth_M2200.pdf";
-	gStyle->SetOptStat(1111111);//check the "outside" value?
-   TCanvas *c1 = new TCanvas("c1","c1",3);
-   c1->Print((pdfName+"[").data());
-   h_nH->Draw("hist text 0");
-   c1->Print(pdfName.data());
-   h_hhM->Draw("hist");
-   c1->Print(pdfName.data());
-   for (int i=0;i<3;i++) {
-      h_higgsPt[i]->Draw("hist");
-      c1->Print(pdfName.data());
-      h_higgsPz[i]->Draw("hist");
-      c1->Print(pdfName.data());
-      h_higgsRap[i]->Draw("hist");
-      c1->Print(pdfName.data());
-   }
-   h_hhDeltaR->Draw("hist");
-   c1->Print(pdfName.data());
-	h_hheta->Draw("hist");
-	c1->Print(pdfName.data());
-	h_hhPhi->Draw("hist");
-	c1->Print(pdfName.data());
-	h_motherM->Draw("hist");
-	c1->Print(pdfName.data());
-	h_motherPT->Draw("hist");
-	c1->Print(pdfName.data()); */
+
 // RooFit
    using namespace RooFit;
    RooRealVar x("x","new Resonance (GeV)",500,3500);
