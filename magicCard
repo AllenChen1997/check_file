@@ -4,13 +4,12 @@ if you let the options empty, it means pass that check.
 
 - the setting for find files
 if all the lhe file are in the different directorys, but all the directorys are in the same directory.
-	you can use that directory as the choosen place
-the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *
+you can use that directory as the choosen place.
+the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *.
 
-	#the place of the lhe and root file: ./testLHEfile/
+	#the place of the lhe and root file: ./forProgramTest/
 	#name for lhe: R*.lhe
-	#name for root: R*.root	
-	#the save file name: Radion_scan
+	#the save file name: Radion_scan_test
 	#the mother particle ID PID: 35
 	
 ----------------------------------------------------------
@@ -29,23 +28,28 @@ How to use:
 		* for the check (mzp | ma0) setting mass value 															*
 		*******************************************************************************************
 
-	#mass list:
-	#mass compare value place: 
+	#mass list: # mh02
+	#mass compare value place: 4
 
-	#mass width list:  
-	#mass width compare:
+
 
 ----------------------------------------------------------
 - PDF weight check
 	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
 
-	#PDF weight: 
-315200-315300 | 263400
+	#PDF weight: 263400
+ 315200-315300 | 263400
 ----------------------------------------------------------
 - other default compare values 
  
-	#lhaid:
-	#process:
+	#lhaid: 320900
+	#process: p p > h2 > H H
 ----------------------------------------------------------
 
-- #want to run root analysis?(Y or N) :Y
+-  #want to run root analysis?(Y or N) :Y
+	#mass width list: # wh02
+		if not run root, mass width/ kinetic test/ mother and duaghter mass test/ won't be done.
+
+ 	the ExRootConverter will run automatically. If you have already had the root file, please use the same name as the lhe file and put it in the same directory.
+	#place of the ExRootLHEFConverter: "/home/allen/programs/MG5_aMC_v2_6_2/ExRootAnalysis/ExRootLHEFConverter"
+
