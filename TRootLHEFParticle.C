@@ -166,6 +166,7 @@ int kineResultFM = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
 
 // RooFit
+// fit mother particle mass
    using namespace RooFit;
    RooRealVar x("x","new Resonance (GeV)",500,3500);
    RooDataHist data("data","new Resonance",x,h_hhM);
@@ -179,13 +180,23 @@ int kineResultF = h_count->GetBinContent(2);
    //fitFun.paramOn(xframe,RooArgSet(mean,width));
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
-//new TCanvas;
-//xframe->Draw();
-   //c1->SetLeftMargin(0.15);	
-   //c1->Print(pdfName.data());
-   
-   //c1->Print((pdfName+"]").data());
-
+	//new TCanvas;
+	//xframe->Draw();
+// fit costheta*
+	RooRealVar x2("x2","costheta*",-1,1);
+	RooRealVar p1("p1","coeff1",-1,1);
+	RooRealVar p2("p2","coeff2",-5,5);
+	RooRealVar p3("p3","coeff3",-5,5);
+	RooRealVar p4("p4","coeff4",-5,5);
+	RooDataHist data2("data2","costheta*",x2,h_cos);
+	RooPolynomial fitFun2("fit2","fit",x2,RooArgList(p1,p2,p3,p4));
+	fitFun2.fitTo(data2);
+	RooPlot* xframe2 = x2.frame();
+	data2.plotOn(xframe2) ;
+	fitFun2.plotOn(xframe2) ;
+	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
+	//new TCanvas;
+	//xframe2->Draw();	
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
 	myfile << "there are " << kineResultF << " without mother particle in total " << nentries << " entries ( " << (float)kineResultF/nentries*100 << "% )\n";
@@ -195,7 +206,8 @@ int kineResultF = h_count->GetBinContent(2);
 	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
 	if ( (a-b) < 15 )	myfile << "mass test: true\n";
 	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
+	myfile << "mother particle is " << (float)width.getVal() / mean.getVal() *100 << " % Decay length\n";
 	myfile << "mass width = " << width.getVal() << "\n";
-	myfile << "mother particle is " << (float)width.getVal() / mean.getVal() *100 << " % Decay length";
+	myfile << "fit:" << p2.getVal() << " | " << p4.getVal();
 	myfile.close();
 }

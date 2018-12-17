@@ -5,9 +5,11 @@
 # need to set magicCard.txt, TRootLHEFParticle.C TRootLHEFParticle.h
 #############################
 #load some function
-function fileExistCheck_fn {
-	# fn_1 = file name	
+function fileExistCheck_fn { # this is use to see if the file is exist or not
+	# the meaning of the variables in the function:
+	# $fn_1 = file name	
 	fileFind=$(find $fn_1 2> /dev/null) # check if the detail.txt is exist
+# if the file is exist, it will sent the alert into the terminal and see if the user want to continue
 	if [ ! -z $fileFind ]; then
 		read -p "$fn_1 had already exist, do you want to continue? Y / N (continue will delete it): " ans
 		if [ $(echo $ans |tr -d ' '|tr 'y' 'Y') != "Y" ]; then
@@ -19,13 +21,15 @@ function fileExistCheck_fn {
 
 function compare_fn { # this is used for 'float point' value compare by awk
 	local i=0
+	# the meaning of the variables in the function:
 	# $fn_1 = list
 	# $fn_2 = compare var
 	for m in $fn_1; do
 		((i+=1))
 		local getV=$(grep "$(echo $m|sed -e s/"#"/"# "/g)"$ $aFile |tr -s ' ' |cut -d ' ' -f 3)
 		local c=$(echo $fn_2|cut -d ' ' -f $i)
-		local res=$(awk 'BEGIN{if ('$getV' == '$c') print 1; else print 0}')
+		local cal="sqrt((float)($getV-$c)*($getV-$c))/$c*100"
+		local res=$(awk 'BEGIN{if ('$cal' < '1' ) print 1; else print 0}')
 		if [ $res != 1 ]; then
 			flag=false
 			echo "$m = $getV compare $c = false" >> detail.txt
@@ -51,7 +55,7 @@ function PDF_weight_fn { # this is use to check there are these PDF id in the lh
 				fi
 			done
 		else
-			c=$(grep 'PDF="'$m'"' $aFile |tr -d ' ')
+			c=$(grep 'PDF="'$m'"' $aFile |tr -d ' ') # do the same thing like above
 			if [ -z $c ]; then
 				flag=false
 				echo -n " $m" >> detail.txt
@@ -59,38 +63,34 @@ function PDF_weight_fn { # this is use to check there are these PDF id in the lh
 		fi
 	done
 	echo "" >> detail.txt
-	# put the result into the xxx.txt (main save file)
-	#c=$(grep "not found PDF=" tmpfile.txt |cut -d '=' -f 2)
-	#if [ ! -z $(echo $c|tr -d ' ') ]; then
-	#	echo " the list of not found PDF= $c" >> ${saveName}.txt
-	#fi
 }
 
-function get_mCompare_value {  # auto get the setting mass from the name of file/ directory
+function get_mCompare_value_fn {  # auto get the setting mass from the name of file/ directory
 	local i=0
-	for i in $mCompaP; do
-		mCompa=$(echo $aFile|sed -e "s:$place::g" |cut -d '_' -f $i |tr -d 'a-zA-Z')
-		fn_1=$mList; fn_2=$mCompa; compare_fn   
-	done		
+	if [ -z $mCompaP ]; then
+		echo 'the "#mass compare value" place in the magicCard needed being setted.'
+		exit
+	else
+		for i in $mCompaP; do
+			mCompa=$(echo $aFile|sed -e "s:$place::g" |cut -d '_' -f $i |tr -d 'a-zA-Z')
+			fn_1=$mList; fn_2=$mCompa; compare_fn   
+		done	
+	fi	
 }
 
 echo "Start process"
 # define variables
-	place=$(grep "#the place" magicCard |cut -d ':' -f 2) # read the setting in the magic card
-	saveName=$(grep "#the save" magicCard |cut -d ':' -f 2|tr -d " ")  # read the setting in the magic card
-	SetID=$(grep "#the mother" magicCard |cut -d ':' -f 2)
-	lheName=$(grep "#name for lhe" magicCard |cut -d ':' -f 2)
+	place=$(grep "#the place" magicCard |cut -d ':' -f 2) # the directory to the place which can find the lhe files
+	saveName=$(grep "#the save" magicCard |cut -d ':' -f 2|tr -d " ")  # the save file name (the comparing result will save into this file)
+	SetID=$(grep "#the mother" magicCard |cut -d ':' -f 2) # the mother particle ID (will be used in root)
+	lheName=$(grep "#name for lhe" magicCard |cut -d ':' -f 2) # the name will be used in find function to find the lhe file
 	mList=$(grep "#mass list" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass list for mass compare sys.
-	mCompaP=$(grep "#mass compare" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass compare for mass compare sys.
+	mCompaP=$(grep "#mass compare" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass compare position for mass compare sys.
 	mwList=$(grep "#mass width list" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass width list for mass compare sys.
-	lhaid=$(grep "lhaid" magicCard |cut -d ':' -f 2| tr -d ' ')
-	process=$(grep "process" magicCard |cut -d ':' -f 2| tr -d ' ')
-	PDFWeight=$(grep "#PDF weight" magicCard |cut -d ':' -f 2|tr -d ' '|tr '|' " ")
+	lhaid=$(grep "lhaid" magicCard |cut -d ':' -f 2| tr -d ' ') # the true value of the lhaid for comparing
+	process=$(grep "process" magicCard |cut -d ':' -f 2| tr -d ' ') # the true value of the generate process(all the space will be delete)
+	PDFWeight=$(grep "#PDF weight" magicCard |cut -d ':' -f 2|tr -d ' '|tr '|' " ") # the PDF ID for the PDF id comparing sys.
 	filename=$(find $place -name $lheName ) # the directories to the lhe file 
-	findRoot=$(grep "#name for root" magicCard |cut -d ':' -f 2)
-	rootName=$(find $place -type f -name $findRoot) # the directories to the root file
-	declare -i rootI; rootI=0 # used as the index of the root
-	directory=`pwd` # record where is this directory
 
 # check if it can find the file
 	if [ -z "$filename" ]; then  # test if filename is a zero length variables
@@ -101,31 +101,32 @@ echo "Start process"
 # build scan file
 fn_1="tmpfile.txt"; fileExistCheck_fn # see if the file is already exist or not
 > tmpfile.txt # clear all the lines in tempfile.txt
-fn_1="${saveName}.txt"; fileExistCheck_fn
-> ${saveName}.txt  # if the file already exist, clean it 
+fn_1="${saveName}.txt"; fileExistCheck_fn # if the file already exist, clean it 
+> ${saveName}.txt 
 fn_1="detail.txt"; fileExistCheck_fn
 > detail.txt
-echo "save name=$saveName"
-	
-# do the check in lhe file
-declare -a getV #used store the data get from lhe file
 
-for aFile in $filename; do
-	flag=true # use for the compare state
+# do the check in lhe file
+for aFile in $filename; do  # pick the directory to the lhe one by one in the loop
+	flag=true # use for expressing the compare state
 
 	# setting mass check
-	if [ ! -z $mList ]; then #check weather mList is empty or not
+	if [ ! -z $mList ]; then # check weather mList is empty or not, if it is not empty, do the check
 		echo "start $aFile mass check"
 		echo "< $aFile >" >> detail.txt
-		get_mCompare_value
-	else echo "pass the setting mass check"
+		get_mCompare_value_fn # call the function which defined above
+	else 
+		echo "pass the setting mass check"
+		echo "pass the setting mass check" >> detail.txt
 	fi	
 
 	# PDF weight check
 	if [ ! -z $(echo $PDFWeight |tr -d ' ') ]; then
 		echo "start $aFile PDF weight check"
 		PDF_weight_fn
-	else echo "pass the PDF weight check"	
+	else 
+		echo "pass the PDF weight check"	
+		echo "pass the PDF weight check"	>> detail.txt
 	fi
 
 	# defualt check (lhaid / process)
@@ -137,7 +138,9 @@ for aFile in $filename; do
 			echo "LHAID = $getLHAID compare $lhaid = false" >> detail.txt
 		else echo "LHAID = $getLHAID compare $lhaid = true" >> detail.txt
 		fi
-	else echo "pass lhaid check"	
+	else 
+		echo "pass lhaid check"	
+		echo "pass lhaid check"	>> detail.txt
 	fi	
 
 	if [ ! -z $process ]; then
@@ -147,18 +150,20 @@ for aFile in $filename; do
 			echo "Process = $getProc compare $process = false" >> detail.txt
 		else echo "Process = $getProc compare $process = true" >> detail.txt
 		fi
-	else echo "pass process check"	
+	else 
+		echo "pass process check"	
+		echo "pass process check" >> detail.txt
 	fi
 	
 	# check if want to run root analysis and run root
 	willRoo=$(grep "#want to" magicCard|cut -d ':' -f 2|tr -d ' '|tr 'n' 'N')
 	if [ $willRoo = "N" ]; then
-		continue
+		continue # pass all the code below and go to the next for loop(the other lhe file name)
 	fi
 	# auto convert the lhe file to the root file
-		exRoot=$(grep "#place" magicCard|cut -d ':' -f 2|tr -d '"')
+		exRoot=$(grep "#place" magicCard|cut -d ':' -f 2|tr -d '"') # this is the directory to the program "ExRootLHEFConverter"
 		aRoot=$(echo $aFile| sed -e 's/.lhe/.root/g' )		
-		$exRoot $aFile $aRoot
+		$exRoot $aFile $aRoot 2> /dev/null # call the program and let lhe files become root file (with the same name xxx.lhe -> xxx.root)
 
 	# check root file is exist
 	if [ -z "$aRoot" ]; then  # test if filename is a zero length variables
@@ -168,41 +173,68 @@ for aFile in $filename; do
 	fi
 
 	echo "start root analysis in $aRoot "
-	((rootI+=1))
-	# change the mother PID in .C file
-	placeInC=$(grep -n "define motherPID" ./TRootLHEFParticle.C|cut -d ":" -f 1) #find the line we want to change
-	sed -i "${placeInC}a #define motherPID ${SetID}" ./TRootLHEFParticle.C
-	sed -i "${placeInC}d" ./TRootLHEFParticle.C
+	# change the mother PID in .C file 
+	placeInC=$(grep -n "define motherPID" ./TRootLHEFParticle.C|cut -d ":" -f 1) #f ind the line we want to change
+	sed -i "${placeInC}a #define motherPID ${SetID}" ./TRootLHEFParticle.C  # write the new line (in the order of "placeInC") into TRootLHEFParticle.C
+	sed -i "${placeInC}d" ./TRootLHEFParticle.C # delete the old line in the TRootLHEFParticle.C
 
 	# run root
 	stringP=$(grep -n string TRootLHEFParticle.h|cut -d ':' -f 1)
 	sed -i ''${stringP}'a \   \string fileName = "'${aRoot}'";' ./TRootLHEFParticle.h # change which file need to run in .h file
 	sed -i "${stringP}d" ./TRootLHEFParticle.h
+		# open the root and automatically send the commands
 	expect -c 'spawn -noecho root -l TRootLHEFParticle.C
 	        send "TRootLHEFParticle t\r"
 			  send "t.Loop()\r"
 	        send ".q\r"
 			  interact'
 	
-	# deal with the tmpfile.txt output
+	# deal with the tmpfile.txt output from root 
+		#although the tmpfile.txt will be delete, the grep things also can be see in the save file.
+	ans1=$(grep "there" tmpfile.txt  |cut -d '(' -f 2|cut -d '%' -f 1)
 	ans2=$(grep "kinetic" ./tmpfile.txt|cut -d ':' -f 2|tr -d ' ')
 	ans3=$(grep "mass test" ./tmpfile.txt |cut -d ' ' -f 3)
-	ans1=$(grep "there" tmpfile.txt  |cut -d '(' -f 2|cut -d '%' -f 1)
+	ans4=$(grep "^mother" ./tmpfile.txt |cut -d ' ' -f 4)
 	mwCompa=$(grep "mass width" ./tmpfile.txt |cut -d '=' -f 2 |tr -d ' ') 
+	fit=$(grep "fit" ./tmpfile.txt |cut -d ':' -f 2| tr -d ' ')
+	fit1=$(echo $fit|cut -d '|' -f 1)
+	fit2=$(echo $fit|cut -d '|' -f 2)
+	# the entries without mother particle check
 	if [ `echo "$ans1 > 1"|bc` -eq 1 ]; then
 		flag=false
 		sed -i "s/)/) > 1%: false/g" ./tmpfile.txt
 	else sed -i "s/)/) < 1%: true/g" ./tmpfile.txt
 	fi
+	# see the result in kinetic analysis
 	if [ $ans2 != true ]; then
 		flag=false
 	fi
+	# see the result in mother particle mass and resonanse check
 	if [ $ans3 != true ]; then
 		flag=false
 	fi
-	sed -i '4d' tmpfile.txt
-	grep '' tmpfile.txt >> detail.txt # put all the output into detail.txt
-
+	# check the 5% 10% width/mass ratio
+	for c in 5 10; do
+		cal="sqrt((float)($ans4-$c)*($ans4-$c))/$c*100"
+		res=$(awk 'BEGIN{if ('$cal' < '1' ) print 1; else print 0}')
+		if [ $flagtmp = true ];then continue; fi
+		if [ $res != 1 ]; then
+			flagtmp=false
+		else 
+			flagtmp=true
+			echo "width/mass = $ans4 compare $c = true" >> detail.txt
+		fi	
+	done
+	if [ $flagtmp = false ];then
+		flag=false
+		echo "width/mass = $ans4 = false" >>detail.txt
+	fi
+	unset flagtmp
+	# cos theta check
+	if [ `echo "$fit1*$fit1 > 0.5"|bc` -eq 1 ] || [ `echo "$fit2*$fit2 > 0.5"|bc` -eq 1 ] ;then
+		echo "cos theta* is not flat" >> detail.txt
+	else echo "cos theta* is flat" >> detail.txt
+	fi
 	# setting mass width check
 	if [ ! -z $mwList ]; then
 		echo "start $aFile mass width check"
@@ -211,19 +243,19 @@ for aFile in $filename; do
 		compare_fn 
 	else echo "pass the setting mass width check"
 	fi
-
+	sed -i '4,6d' tmpfile.txt  # delete the line which no need to be shown
+	grep '' tmpfile.txt >> detail.txt # put all the output into detail.txt
 	# see the final state of flag and print result into tmpfile
 	if [ $flag = true ]; then
 		echo "$aFile true" >> ${saveName}.txt
-	else
-		echo "$aFile false" >> ${saveName}.txt
+	else	echo "$aFile false" >> ${saveName}.txt
 	fi
 	echo "-----------------------------------------------" >> detail.txt
-done # end loop all file
+done # end loop all lhe file
 # put the data in the detail.txt into the save file and remove the detail.txt
 echo " " >> ${saveName}.txt ; echo "these are the comparing detail: " >> ${saveName}.txt 
-grep '' ./detail.txt >> ${saveName}.txt
-rm ./detail.txt ./tmpfile.txt
+grep '' ./detail.txt >> ${saveName}.txt # put all the content in the detail.txt into save file
+rm ./detail.txt ./tmpfile.txt # delete two file
 
 echo "${saveName}.txt has build"
 echo "process done"
