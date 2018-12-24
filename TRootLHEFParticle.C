@@ -3,7 +3,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID  39
+#define motherPID  35
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -53,7 +53,7 @@ void TRootLHEFParticle::Loop()
 	TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
 	TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
 	TH1F *h_count = new TH1F("h_count","0 for strange momentum, 1 for no mother particle in entries",2,0,2);
-	TH1F *h_cos = new TH1F("h_costheta*","h_costheta*",200,-1,1);
+	TH1F *h_cos = new TH1F("h_costheta","h_costheta*",200,-1,1);
 
 //define matrix form hist
    string text[3] = {"higgs1","higgs2","NewResonance"}; // covenient to input names by orders	
@@ -156,24 +156,17 @@ void TRootLHEFParticle::Loop()
    }
 // print out the result 
 	gStyle->SetOptStat(1111111);//check the "outside" value?
-//	h_higgsP[0]->Draw();
-//	h_higgsP[1]->Draw("SAME");
-//	h_higgsP[2]->Draw("SAME");
-	h_cos->Draw();
-	new TCanvas;
-	h_count->Draw();
-int kineResultT = h_count->GetBinContent(1);
+	//	h_higgsP[0]->Draw();
+	//	h_higgsP[1]->Draw("SAME");
+	//	h_higgsP[2]->Draw("SAME");
+//h_cos->Draw();
+//new TCanvas;
+//h_count->Draw();
+int kineResultFM = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
-// save all plots into PDF/txt
-   ofstream myfile("tmpfile.txt");
-	myfile << "there are " << kineResultF << " without mother particle in total " << nentries << " entries\n";
-	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
-	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
-	if ( (a-b) < 15 )	myfile << "mass test: true";
-	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
-	myfile.close();
 
 // RooFit
+// fit mother particle mass
    using namespace RooFit;
    RooRealVar x("x","new Resonance (GeV)",500,3500);
    RooDataHist data("data","new Resonance",x,h_hhM);
@@ -187,15 +180,34 @@ int kineResultF = h_count->GetBinContent(2);
    //fitFun.paramOn(xframe,RooArgSet(mean,width));
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
-	new TCanvas;
-   xframe->Draw();
-   //c1->SetLeftMargin(0.15);	
-   //c1->Print(pdfName.data());
-   
-   //c1->Print((pdfName+"]").data());
-   //cout << "roofit_part1\n" << fitFun.getVal() << endl;
-   //cout << "roofit_part2\n" << fitFun.getVal(x) << endl;
-   cout << "mean = " << mean.getVal() << endl;
-   cout << "width = " << width.getVal() << endl; 
-	cout << "width/mean = " <<  width.getVal() / mean.getVal() << endl;
+	//new TCanvas;
+	//xframe->Draw();
+// fit costheta*
+	RooRealVar x2("x2","costheta*",-1,1);
+	RooRealVar p1("p1","coeff1",-1,1);
+	RooRealVar p2("p2","coeff2",-5,5);
+	RooRealVar p3("p3","coeff3",-5,5);
+	RooRealVar p4("p4","coeff4",-5,5);
+	RooDataHist data2("data2","costheta*",x2,h_cos);
+	RooPolynomial fitFun2("fit2","fit",x2,RooArgList(p1,p2,p3,p4));
+	fitFun2.fitTo(data2);
+	RooPlot* xframe2 = x2.frame();
+	data2.plotOn(xframe2) ;
+	fitFun2.plotOn(xframe2) ;
+	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
+	//new TCanvas;
+	//xframe2->Draw();	
+// save all plots into PDF/txt
+   ofstream myfile("tmpfile.txt");
+	myfile << "there are " << kineResultF << " without mother particle in total " << nentries << " entries ( " << (float)kineResultF/nentries*100 << "% )\n";
+	if ( kineResultF == kineResultFM ) myfile << "kinetic test: true\n";
+	else myfile << "kinetic test: False\n";
+	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
+	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
+	if ( (a-b) < 15 )	myfile << "mass test: true\n";
+	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
+	myfile << "mother particle is " << (float)width.getVal() / mean.getVal() *100 << " % Decay length\n";
+	myfile << "mass width = " << width.getVal() << "\n";
+	myfile << "fit:" << p2.getVal() << " | " << p4.getVal();
+	myfile.close();
 }
