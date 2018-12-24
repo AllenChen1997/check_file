@@ -3,7 +3,6 @@ the options will look like "#option: value", and only modify the words after the
 if you let the options empty, it means pass that check.
 the explain can be see below all the settings.
 
-<<<<<<< HEAD:magicCard.txt
 	part 1
 #the place of the lhe and root file: ./unit_test/
 #name for lhe: *.lhe
@@ -30,17 +29,6 @@ the explain can be see below all the settings.
 if all the lhe file are in the different directorys, but all the directorys are in the same directory.
 you can use that directory as the choosen place.
 the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *.
-=======
-- the setting for find files
-if all the lhe file are in the different directorys, but all the directorys are in the same directory.
-you can use that directory as the choosen place.
-the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *.
-
-	#the place of the lhe and root file: ./testLHEfile/
-	#name for lhe: R*.lhe
-	#the save file name: Radion_scan
-	#the mother particle ID PID: 35
->>>>>>> cb2c9005b0beca651e49ff47dc90af1d616d8458:magicCard
 	
 ----------------------------------------------------------
 - part 2 setting mass check list 
@@ -57,35 +45,11 @@ How to use:
 		* choose the mass compare place: 5 | 6   																	*
 		* for the check (mzp | ma0) setting mass value 															*
 		*******************************************************************************************
-<<<<<<< HEAD:magicCard.txt
-=======
-
-	#mass list: # mh02
-	#mass compare value place: 4
->>>>>>> cb2c9005b0beca651e49ff47dc90af1d616d8458:magicCard
 ----------------------------------------------------------
 - part 3 PDF weight check
 	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
-<<<<<<< HEAD:magicCard.txt
 ----------------------------------------------------------
 - part 4 root analysis 
 		if not run root, mass width/ kinetic test/ mother and duaghter mass test/ won't be done.
 	 	the ExRootConverter will run automatically. If you have already had the root file, please use the
 		same name as the lhe file and put it in the same directory.
-=======
-
-	#PDF weight: 315200-315300 | 263400
-----------------------------------------------------------
-- other default compare values 
- 
-	#lhaid: 320900
-	#process: p p > h2 > H H
-----------------------------------------------------------
--  #want to run root analysis?(Y or N) :Y
-		if not run root, mass width/ kinetic test/ mother and duaghter mass test/ won't be done.
-	 	the ExRootConverter will run automatically. If you have already had the root file, please use the
-		same name as the lhe file and put it in the same directory.
-	#mass width list: # wh02
-	#place of the ExRootLHEFConverter: "/home/allen/programs/MG5_aMC_v2_6_2/ExRootAnalysis/ExRootLHEFConverter"
-
->>>>>>> cb2c9005b0beca651e49ff47dc90af1d616d8458:magicCard

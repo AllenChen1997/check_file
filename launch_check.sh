@@ -1,60 +1,3 @@
-<<<<<<< HEAD
-This file is use to modify the strings in python script
-the options will look like "#option: value", and only modify the words after the ":"
-if you let the options empty, it means pass that check.
-the explain can be see below all the settings.
-
-	part 1
-#the place of the lhe and root file: ./unit_test/
-#name for lhe: *.lhe
-#the save file name: test_scan
-#the mother particle ID PID: 39
-#lhaid: 320900
-#process: p p > y > H H
-
-	part 2
-#mass list: # mgr
-#mass compare value place: 5
-
-	part 3
-#PDF weight: 315200-315300 | 263400
-	part 4
-#want to run root analysis?(Y or N) :Y
-#mass width list: # wgr
-#place of the ExRootLHEFConverter: "/home/allen/programs/MG5_aMC_v2_6_2/ExRootAnalysis/ExRootLHEFConverter"
-
-
-	explains
-----------------------------------------------------------
--part 1 the setting for find files
-if all the lhe file are in the different directorys, but all the directorys are in the same directory.
-you can use that directory as the choosen place.
-the default set of name for lhe file is "*.lhe" means find all lhe file, you can add some word before *.
-	
-----------------------------------------------------------
-- part 2 setting mass check list 
-How to use:
-1. use "|" as delimiter 
-2. use the name in the lhe file/param cards
-(Ex:       4 0.000000e+00 # mc  -> so we choose # mc )
-(the multiple compare list Ex: #mgr | # mb )
-
-		*******************************************************************************************
-		* if the file name looks like:(use "_" as delimeter) 													*
-		* job_Zprime_A0h_A0chichi_MZp600_MA0300_slc6_amd64_gcc481_CMSSW_7_1_30_tarball.tar.xz.lhe	*
-		*  1    2     3     4       5      6     7     8     9      10  ...								*
-		* choose the mass compare place: 5 | 6   																	*
-		* for the check (mzp | ma0) setting mass value 															*
-		*******************************************************************************************
-----------------------------------------------------------
-- part 3 PDF weight check
-	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
-----------------------------------------------------------
-- part 4 root analysis 
-		if not run root, mass width/ kinetic test/ mother and duaghter mass test/ won't be done.
-	 	the ExRootConverter will run automatically. If you have already had the root file, please use the
-		same name as the lhe file and put it in the same directory.
-=======
 #!/bin/bash
 # fileName launch_genLHE
 # built by Kong-Xiang Chen
@@ -125,7 +68,7 @@ function PDF_weight_fn { # this is use to check there are these PDF id in the lh
 function get_mCompare_value_fn {  # auto get the setting mass from the name of file/ directory
 	local i=0
 	if [ -z $mCompaP ]; then
-		echo 'the "#mass compare value" place in the magicCard needed being setted.'
+		echo 'the "#mass compare value" place in the magicCard.txt needed being setted.'
 		exit
 	else
 		for i in $mCompaP; do
@@ -137,16 +80,16 @@ function get_mCompare_value_fn {  # auto get the setting mass from the name of f
 
 echo "Start process"
 # define variables
-	place=$(grep "#the place" magicCard |cut -d ':' -f 2) # the directory to the place which can find the lhe files
-	saveName=$(grep "#the save" magicCard |cut -d ':' -f 2|tr -d " ")  # the save file name (the comparing result will save into this file)
-	SetID=$(grep "#the mother" magicCard |cut -d ':' -f 2) # the mother particle ID (will be used in root)
-	lheName=$(grep "#name for lhe" magicCard |cut -d ':' -f 2) # the name will be used in find function to find the lhe file
-	mList=$(grep "#mass list" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass list for mass compare sys.
-	mCompaP=$(grep "#mass compare" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass compare position for mass compare sys.
-	mwList=$(grep "#mass width list" magicCard |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass width list for mass compare sys.
-	lhaid=$(grep "lhaid" magicCard |cut -d ':' -f 2| tr -d ' ') # the true value of the lhaid for comparing
-	process=$(grep "process" magicCard |cut -d ':' -f 2| tr -d ' ') # the true value of the generate process(all the space will be delete)
-	PDFWeight=$(grep "#PDF weight" magicCard |cut -d ':' -f 2|tr -d ' '|tr '|' " ") # the PDF ID for the PDF id comparing sys.
+	place=$(grep "#the place" magicCard.txt |cut -d ':' -f 2) # the directory to the place which can find the lhe files
+	saveName=$(grep "#the save" magicCard.txt |cut -d ':' -f 2|tr -d " ")  # the save file name (the comparing result will save into this file)
+	SetID=$(grep "#the mother" magicCard.txt |cut -d ':' -f 2) # the mother particle ID (will be used in root)
+	lheName=$(grep "#name for lhe" magicCard.txt |cut -d ':' -f 2) # the name will be used in find function to find the lhe file
+	mList=$(grep "#mass list" magicCard.txt |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass list for mass compare sys.
+	mCompaP=$(grep "#mass compare" magicCard.txt |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass compare position for mass compare sys.
+	mwList=$(grep "#mass width list" magicCard.txt |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass width list for mass compare sys.
+	lhaid=$(grep "lhaid" magicCard.txt |cut -d ':' -f 2| tr -d ' ') # the true value of the lhaid for comparing
+	process=$(grep "process" magicCard.txt |cut -d ':' -f 2| tr -d ' ') # the true value of the generate process(all the space will be delete)
+	PDFWeight=$(grep "#PDF weight" magicCard.txt |cut -d ':' -f 2|tr -d ' '|tr '|' " ") # the PDF ID for the PDF id comparing sys.
 	filename=$(find $place -name $lheName ) # the directories to the lhe file 
 
 # check if it can find the file
@@ -213,12 +156,12 @@ for aFile in $filename; do  # pick the directory to the lhe one by one in the lo
 	fi
 	
 	# check if want to run root analysis and run root
-	willRoo=$(grep "#want to" magicCard|cut -d ':' -f 2|tr -d ' '|tr 'n' 'N')
+	willRoo=$(grep "#want to" magicCard.txt|cut -d ':' -f 2|tr -d ' '|tr 'n' 'N')
 	if [ $willRoo = "N" ]; then
 		continue # pass all the code below and go to the next for loop(the other lhe file name)
 	fi
 	# auto convert the lhe file to the root file
-		exRoot=$(grep "#place" magicCard|cut -d ':' -f 2|tr -d '"') # this is the directory to the program "ExRootLHEFConverter"
+		exRoot=$(grep "#place" magicCard.txt|cut -d ':' -f 2|tr -d '"') # this is the directory to the program "ExRootLHEFConverter"
 		aRoot=$(echo $aFile| sed -e 's/.lhe/.root/g' )		
 		$exRoot $aFile $aRoot 2> /dev/null # call the program and let lhe files become root file (with the same name xxx.lhe -> xxx.root)
 
@@ -316,4 +259,3 @@ rm ./detail.txt ./tmpfile.txt # delete two file
 
 echo "${saveName}.txt has build"
 echo "process done"
->>>>>>> cb2c9005b0beca651e49ff47dc90af1d616d8458
