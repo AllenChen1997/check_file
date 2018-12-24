@@ -3,9 +3,9 @@ this work includes the bash script, and root macro to check some words in the fi
 
 this work also use the ExRootLHEFConverter in ExRootAnalysis.
 if you already had Madgraph :
-...
-MG5_aMC>install ExRootAnalysis 
-...
+
+	MG5_aMC>install ExRootAnalysis 
+
 you will see the ExRootLHEFConverter at MG5_aMC_xxx/ExRootAnalysis/
 if you didn't have Madgraph, you can see: https://launchpad.net/mg5amcnlo
 
@@ -24,7 +24,7 @@ if you didn't have Madgraph, you can see: https://launchpad.net/mg5amcnlo
 (1) put magicCard.txt, TRootLHEFParticle.C, TRootLHEFParticle.h, launch_check.sh, and unit_test/ in the same directory
 
 (2) do:
-...
-$bash lanch_check.sh
-...
+
+	$bash lanch_check.sh
+
 (3) you will see test_scan.txt being built.
