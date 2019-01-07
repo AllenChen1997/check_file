@@ -16,15 +16,16 @@ if you didn't have Madgraph, you can see: https://launchpad.net/mg5amcnlo
 
 (3) open terminal with the dictory in (1)
 
-(4) do $bash launch_check.sh
+(4) do 
+
+	bash launch_check.sh
 
 (5) you will see {setting save name}.txt in the dictory in (1) 
 
 # Quick testing
-(1) put magicCard.txt, TRootLHEFParticle.C, TRootLHEFParticle.h, launch_check.sh, and unit_test/ in the same directory
 
-(2) do:
+	git clone https://github.com/AllenChen1997/check_file.git
+	cd check_file/
+	bash launch_check.sh
 
-	$bash lanch_check.sh
-
-(3) you will see test_scan.txt being built.
+you will see test_scan.txt being built.
