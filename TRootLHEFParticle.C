@@ -3,7 +3,9 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID  35
+#define motherPID  39
+#define min 1400
+#define max 3400
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -46,10 +48,10 @@ void TRootLHEFParticle::Loop()
    TH1F *h_higgsRap[3];
    TH1F *h_nH = new TH1F("h_nH","h_nH",8,-0.5,7.5);
    TH1F *h_hhDeltaR = new TH1F("h_hhDeltaR","h_hhDeltaR",60,2,5);
-   TH1F *h_hhM = new TH1F("h_hhNewResonanceM","h_hhNewResonanceM",100,500,3500);
+   TH1F *h_hhM = new TH1F("h_hhNewResonanceM","h_hhNewResonanceM",100,min,max);
 	TH1F *h_hheta = new TH1F("h_hhDeltaEta","h_hhDeltaEta",40,0,10);
 	TH1F *h_hhPhi = new TH1F("h_hhDeltaPhi","h_hhDeltaPhi",40,0,10);
-	TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,500,3500);
+	TH1F *h_motherM = new TH1F("h_motherM","h_motherM",100,min,max);
 	TH1F *h_motherPT = new TH1F("h_motherPT","h_motherPT",40,0,2000);
 	TH1F *h_PID = new TH1F("h_PID","h_PID",20,20,40); 
 	TH1F *h_count = new TH1F("h_count","0 for strange momentum, 1 for no mother particle in entries",2,0,2);
@@ -168,21 +170,27 @@ int kineResultF = h_count->GetBinContent(2);
 // RooFit
 // fit mother particle mass
    using namespace RooFit;
-   RooRealVar x("x","new Resonance (GeV)",500,3500);
+   RooRealVar x("x","new Resonance (GeV)",min,max);
    RooDataHist data("data","new Resonance",x,h_hhM);
-   RooRealVar mean("mean","mean",500,3500);
+   RooRealVar mean("mean","mean",min,max);
    RooRealVar width("width","width",0,500);
    RooBreitWigner fitFun("fit","fit",x,mean,width);
    fitFun.fitTo(data);
    RooPlot* xframe = x.frame();
    data.plotOn(xframe) ;
    fitFun.plotOn(xframe);
+	float z = (float)width.getVal() / mean.getVal();
+	float dx = width.getError()/width.getVal();
+	float dy = mean.getError()/mean.getVal();
+	float err = z * TMath::Sqrt( dx*dx + dy*dy );
    //fitFun.paramOn(xframe,RooArgSet(mean,width));
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
 	//new TCanvas;
-	//xframe->Draw();
+	xframe->Draw();
 // fit costheta*
+//int docostheta = 1;
+//if ( docostheta == 1 ){
 	RooRealVar x2("x2","costheta*",-1,1);
 	RooRealVar p1("p1","coeff1",-1,1);
 	RooRealVar p2("p2","coeff2",-5,5);
@@ -195,19 +203,20 @@ int kineResultF = h_count->GetBinContent(2);
 	data2.plotOn(xframe2) ;
 	fitFun2.plotOn(xframe2) ;
 	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
-	//new TCanvas;
-	//xframe2->Draw();	
+	new TCanvas;
+	xframe2->Draw();	
+	std::cout << p2.getError() << "this is test" << std::endl;
+//}
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
-	myfile << "there are " << kineResultF << " without mother particle in total " << nentries << " entries ( " << (float)kineResultF/nentries*100 << "% )\n";
 	if ( kineResultF == kineResultFM ) myfile << "kinetic test: true\n";
 	else myfile << "kinetic test: False\n";
 	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
 	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
 	if ( (a-b) < 15 )	myfile << "mass test: true\n";
 	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
-	myfile << "mother particle is " << (float)width.getVal() / mean.getVal() *100 << " % Decay length\n";
-	myfile << "mass width = " << width.getVal() << "\n";
+	myfile << "mother particle is " << z*100 << " + " << err*100 << "\n";
+	myfile << "mass width = " << width.getVal() << " + " << width.getError() << "\n";
 	myfile << "fit:" << p2.getVal() << " | " << p4.getVal();
 	myfile.close();
 }
