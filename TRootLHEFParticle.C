@@ -3,9 +3,10 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID  39
+#define motherPID 39
 #define min 1400
 #define max 3400
+#define docostheta 0
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -190,12 +191,13 @@ int kineResultF = h_count->GetBinContent(2);
 	xframe->Draw();
 // fit costheta*
 //int docostheta = 1;
-//if ( docostheta == 1 ){
+
 	RooRealVar x2("x2","costheta*",-1,1);
 	RooRealVar p1("p1","coeff1",-1,1);
 	RooRealVar p2("p2","coeff2",-5,5);
 	RooRealVar p3("p3","coeff3",-5,5);
 	RooRealVar p4("p4","coeff4",-5,5);
+if ( docostheta == 1 ){
 	RooDataHist data2("data2","costheta*",x2,h_cos);
 	RooPolynomial fitFun2("fit2","fit",x2,RooArgList(p1,p2,p3,p4));
 	fitFun2.fitTo(data2);
@@ -206,7 +208,7 @@ int kineResultF = h_count->GetBinContent(2);
 	new TCanvas;
 	xframe2->Draw();	
 	std::cout << p2.getError() << "this is test" << std::endl;
-//}
+}
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
 	if ( kineResultF == kineResultFM ) myfile << "kinetic test: true\n";
@@ -217,6 +219,8 @@ int kineResultF = h_count->GetBinContent(2);
 	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
 	myfile << "mother particle is " << z*100 << " + " << err*100 << "\n";
 	myfile << "mass width = " << width.getVal() << " + " << width.getError() << "\n";
+	if ( docostheta == 1 ){
 	myfile << "fit:" << p2.getVal() << " | " << p4.getVal();
+	}
 	myfile.close();
 }

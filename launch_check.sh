@@ -1,10 +1,11 @@
 #!/bin/bash
 # fileName launch_genLHE
 # built by Kong-Xiang Chen
-# Date 2018/12/15
+# Date 2019/01/08
 # need to run with magicCard.txt, TRootLHEFParticle.C TRootLHEFParticle.h
 #############################
-# load some function
+## load some function
+# function called by function
 function fileExistCheck_fn { # this is use to see if the file is exist or not
 	# the meaning of the variables in the function:
 	# $fn_1 = file name	
@@ -13,15 +14,46 @@ function fileExistCheck_fn { # this is use to see if the file is exist or not
 		read -p "$fn_1 had already exist, do you want to continue? Y / N (continue will delete it): " ans
 		if [ $(echo $ans |tr -d ' '|tr 'y' 'Y') != "Y" ]; then
 			echo "process canceled"
-			exit 1
+			exit 1  # if the answer is yes, the program will stop
 		fi
 	fi 
 }
 
+function compare_fn { # just compare two variables equal or not. science notification can be used
+	# the meaning of the variables in the function:
+	# $fn_1 = true value
+	# $fn_2 = compare value
+	# $fn_3 = compare name
+	local res=$(awk 'BEGIN{if ('$fn_1' == '$fn_2' ) print 1; else print 0}')
+	if [ $res != 1 ]; then
+			flag=false
+		echo "$fn_3 = $fn_2 compare $fn_1 = false" >> detail.txt
+		else echo "$fn_3 = $fn_2 compare $fn_1 = true" >> detail.txt
+	fi	
+}
+
+function compare_withError_fn {
+	# the meaning of the variables in the function:
+	# $fn_1 = true value
+	# $fn_2 = compare value
+	# $fn_3 = compare name
+	# $fn_4 = error
+	local add="$fn_2 + $fn_4"
+	local minus="$fn_2 - $fn_4"
+	# if the true value is in the range of compare value +- error, result is true.
+	if [ `echo "$fn_1 < $add"|bc` == 1 ] && [ `echo " $fn_1 > $minus"|bc` == 1 ]; then
+		echo "$fn_3 = $fn_2 +- $fn_4 compare $fn_1 = true" >> detail.txt
+		return 1
+	else 
+		echo "$fn_3 = $fn_2 +- $fn_4 compare $fn_1 = false" >> detail.txt
+	fi
+}
+
+# function called by main
 function define_variables_fn {  # define variables
 	place=$(grep "#the place" magicCard.txt |cut -d ':' -f 2) # the directory to the place which can find the lhe files
 	saveName=$(grep "#the save" magicCard.txt |cut -d ':' -f 2|tr -d " ")  # the save file name (the comparing result will save into this file)
-	SetID=$(grep "#the mother" magicCard.txt |cut -d ':' -f 2) # the mother particle ID (will be used in root)
+	SetID=$(grep "#the mother" magicCard.txt |cut -d ':' -f 2|tr -d ' ') # the mother particle ID (will be used in root)
 	lheName=$(grep "#name for lhe" magicCard.txt |cut -d ':' -f 2) # the name will be used in find function to find the lhe file
 	mList=$(grep "#mass list" magicCard.txt |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass list for mass compare sys.
 	mCompaP=$(grep "#mass compare" magicCard.txt |cut -d ':' -f 2 |tr -d " "|tr "|" " ") # mass compare position for mass compare sys.
@@ -35,20 +67,6 @@ function define_variables_fn {  # define variables
 		echo "can not detect the lhe file"
 		exit 1 # if there is no file, this macro will stop
 	fi
-}
-
-function compare_fn { # let (true value - compare value)^2 / true value < 1%
-	# the meaning of the variables in the function:
-	# $fn_1 = true value
-	# $fn_2 = compare value
-	# $fn_3 = compare name
-	local cal="sqrt((float)($fn_1-$fn_2)*($fn_1-$fn_2))/$fn_1*100"
-	local res=$(awk 'BEGIN{if ('$cal' < '1' ) print 1; else print 0}')
-	if [ $res != 1 ]; then
-			flag=false
-		echo "$fn_3 = $fn_2 compare $fn_1 = false" >> detail.txt
-		else echo "$fn_3 = $fn_2 compare $fn_1 = true" >> detail.txt
-	fi	
 }
 
 function build_file_fn { # build the necessary files( tmpfile.txt/ detail.txt/ "saveName".txt)
@@ -131,28 +149,6 @@ function defaultCheck_fn { # check the setting process and lhaid
 	fi
 }
 
-function compare_withError_fn {
-	# the meaning of the variables in the function:
-	# $fn_1 = true value
-	# $fn_2 = compare value
-	# $fn_3 = compare name
-	# $fn_4 = error
-	local add="$fn_2 + $fn_4"
-	local minus="$fn_2 - $fn_4"
-	if [ `echo "$fn_1 < $add"|bc` == 1 ] && [ `echo " $fn_1 > $minus"|bc` == 1 ]; then
-		echo "$fn_3 = $fn_2 +- $fn_4 compare $fn_1 = true" >> detail.txt
-		return 1
-	else 
-		local upper=`echo "$add - $fn_1"|bc`
-		local lower=`echo "$minus - $fn_1"|bc`
-		if [ `echo "$upper*$upper > $lower*$lower"|bc` == 1 ]; then
-			fn_2=`echo $add|tr -d ' '`;	compare_fn
-		else 
-			fn_2=`echo $minus|tr -d ' '`;	compare_fn
-		fi
-	fi
-}
-
 function runRoot_fn {
 	# check if want to run root analysis and run root
 	willRoo=$(grep "#want to" magicCard.txt|cut -d ':' -f 2|tr -d ' '|tr 'n' 'N')
@@ -172,15 +168,23 @@ function runRoot_fn {
 	fi
 	echo "start root analysis in $aRoot "
 
-	# change the mother PID in .C file 
+	# change the define of mother PID/ min/ max / docostheta in .C file 
 	sed -i "/#define motherPID/c #define motherPID ${SetID}" ./TRootLHEFParticle.C  # use new line replace the old line	
+		# find the setting mass
 	local range=`grep -n "BLOCK MASS" $aFile|cut -d ':' -f 1`
 	local mid_line=`sed -n ''$range','$(echo "$range + 15"|bc)'p' $aFile|grep "$SetID "`
 	local mid=`echo $mid_line|cut -d ' ' -f 2`
-	local mid_t=`awk "BEGIN { print $mid }"`
+	local mid_t=`awk "BEGIN { print $mid }"` #turn science notification into normal numbers
+		# put the setting values into it
 	sed -i '/#define min/c #define min '`echo "$mid_t - 1000"|bc`'' ./TRootLHEFParticle.C
 	sed -i '/#define max/c #define max '`echo "$mid_t + 1000"|bc`'' ./TRootLHEFParticle.C	
-	# run root
+		# find the spin of mother particle
+	local range=`grep -n "BLOCK QNUMBERS ${SetID}" $aFile|cut -d ':' -f 1`
+	local spinflag=`sed -n ''$(echo "$range + 2"|bc)'p' $aFile|tr -s ' '|cut -d ' ' -f 3`
+	if [ $spinflag == "1" ]; then
+		sed -i '/#define docostheta/c #define docostheta 1' ./TRootLHEFParticle.C
+	else 	sed -i '/#define docostheta/c #define docostheta 0' ./TRootLHEFParticle.C
+	fi
 	stringP=$(grep -n string TRootLHEFParticle.h|cut -d ':' -f 1)
 	sed -i '/string fileName/c \   \string fileName = "'${aRoot}'";' ./TRootLHEFParticle.h # change which file need to run in .h file
 	# open the root and automatically send the commands
@@ -191,16 +195,13 @@ function runRoot_fn {
 			  interact'
 	
 	# deal with the tmpfile.txt output from root 
-		#although the tmpfile.txt will be delete, the grep things also can be see in the save file.
+		#if you want to see tmpfile.txt, please delete "rm ./detail.txt ./tmpfile.txt"
 	ans1=$(grep "kinetic" ./tmpfile.txt|cut -d ':' -f 2|tr -d ' ')
 	ans2=$(grep "mass test" ./tmpfile.txt |cut -d ' ' -f 3)
 	ans3=$(grep "^mother" ./tmpfile.txt |cut -d ' ' -f 4)
 	ans3_2=$(grep "^mother" ./tmpfile.txt |cut -d ' ' -f 6)
 	mwCompa=$(grep "mass width" ./tmpfile.txt |cut -d ' ' -f 4|tr -d ' ')
 	mwCompa_2=$(grep "mass width" ./tmpfile.txt |cut -d ' ' -f 6|tr -d ' ')
-	fit=$(grep "fit" ./tmpfile.txt |cut -d ':' -f 2| tr -d ' ')
-	fit1=$(echo $fit|cut -d '|' -f 1)
-	fit2=$(echo $fit|cut -d '|' -f 2)
 
 	# see the result in kinetic analysis
 	if [ $ans1 != true ]; then
@@ -219,10 +220,15 @@ function runRoot_fn {
 		fn_1="5"; compare_withError_fn
 	else fn_1="10"; compare_withError_fn
 	fi
-	# cos theta check
-	if [ `echo "$fit1*$fit1 > 0.5"|bc` -eq 1 ] || [ `echo "$fit2*$fit2 > 0.5"|bc` -eq 1 ] ;then
-		echo "cos theta* is not flat" >> detail.txt
-	else echo "cos theta* is flat" >> detail.txt
+	# cos theta check( if spin=0 )
+	if [ $spinflag == "1" ]; then
+		local fit=$(grep "fit" ./tmpfile.txt |cut -d ':' -f 2| tr -d ' ')
+		local fit1=$(echo $fit|cut -d '|' -f 1)
+		local fit2=$(echo $fit|cut -d '|' -f 2)
+		if [ `echo "$fit1*$fit1 > 0.5"|bc` -eq 1 ] || [ `echo "$fit2*$fit2 > 0.5"|bc` -eq 1 ] ;then
+			echo "cos theta* is not flat" >> detail.txt
+		else echo "cos theta* is flat" >> detail.txt
+		fi
 	fi
 	# setting mass width check
 	if [ ! -z $mwList ]; then
