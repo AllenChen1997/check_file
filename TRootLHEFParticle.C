@@ -3,10 +3,10 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#define motherPID 39
-#define min 1400
-#define max 3400
-#define docostheta 0
+#define motherPID 35
+#define min 200
+#define max 2200
+#define docostheta 1
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -146,7 +146,6 @@ void TRootLHEFParticle::Loop()
 		  float theta=TMath::ATan(higgsVect[0].Pt()/ higgsVect[0].Pz() );
 		  h_cos->Fill( higgsVect[0].Pz()/ higgsVect[0].P() );
 		  //if ( theta > 1.57 || theta < -1.57 ) std::cout << cos(TMath::ATan(higgsVect[0].Pt()/ higgsVect[0].Pz() ) ) << " | theta= " << theta << std::endl;
-		  //h_cos[1]->Draw("SAME");
 			
 		  h_higgsP[0]->Fill(higgsVect[0].P());
 		  h_higgsP[1]->Fill(higgsVect[1].P());
@@ -188,7 +187,7 @@ int kineResultF = h_count->GetBinContent(2);
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
 	//new TCanvas;
-	xframe->Draw();
+	//xframe->Draw();
 // fit costheta*
 //int docostheta = 1;
 
@@ -205,8 +204,8 @@ if ( docostheta == 1 ){
 	data2.plotOn(xframe2) ;
 	fitFun2.plotOn(xframe2) ;
 	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
-	new TCanvas;
-	xframe2->Draw();	
+	//new TCanvas;
+	//xframe2->Draw();	
 	std::cout << p2.getError() << "this is test" << std::endl;
 }
 // save all plots into PDF/txt
@@ -220,7 +219,7 @@ if ( docostheta == 1 ){
 	myfile << "mother particle is " << z*100 << " + " << err*100 << "\n";
 	myfile << "mass width = " << width.getVal() << " + " << width.getError() << "\n";
 	if ( docostheta == 1 ){
-	myfile << "fit:" << p2.getVal() << " | " << p4.getVal();
+	myfile << "fit:" <<  Form("%.4f", p1.getVal() ) << " | " <<  Form("%.4f", p2.getVal() ) << " | " <<  Form("%.4f", p3.getVal() ) << " | " <<  Form("%.4f", p4.getVal() );
 	}
 	myfile.close();
 }

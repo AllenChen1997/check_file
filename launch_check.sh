@@ -26,7 +26,7 @@ function compare_fn { # just compare two variables equal or not. science notific
 	# $fn_3 = compare name
 	local res=$(awk 'BEGIN{if ('$fn_1' == '$fn_2' ) print 1; else print 0}')
 	if [ $res != 1 ]; then
-			flag=false
+		flag=false
 		echo "$fn_3 = $fn_2 compare $fn_1 = false" >> detail.txt
 		else echo "$fn_3 = $fn_2 compare $fn_1 = true" >> detail.txt
 	fi	
@@ -43,9 +43,9 @@ function compare_withError_fn {
 	# if the true value is in the range of compare value +- error, result is true.
 	if [ `echo "$fn_1 < $add"|bc` == 1 ] && [ `echo " $fn_1 > $minus"|bc` == 1 ]; then
 		echo "$fn_3 = $fn_2 +- $fn_4 compare $fn_1 = true" >> detail.txt
-		return 1
 	else 
 		echo "$fn_3 = $fn_2 +- $fn_4 compare $fn_1 = false" >> detail.txt
+		flag=false
 	fi
 }
 
@@ -188,11 +188,13 @@ function runRoot_fn {
 	stringP=$(grep -n string TRootLHEFParticle.h|cut -d ':' -f 1)
 	sed -i '/string fileName/c \   \string fileName = "'${aRoot}'";' ./TRootLHEFParticle.h # change which file need to run in .h file
 	# open the root and automatically send the commands
-	expect -c 'spawn -noecho root -l TRootLHEFParticle.C
+	expect -c '
+			  spawn -noecho root -l TRootLHEFParticle.C
 	        send "TRootLHEFParticle t\r"
 			  send "t.Loop()\r"
 	        send ".q\r"
-			  interact'
+			  interact
+	'
 	
 	# deal with the tmpfile.txt output from root 
 		#if you want to see tmpfile.txt, please delete "rm ./detail.txt ./tmpfile.txt"
@@ -212,8 +214,8 @@ function runRoot_fn {
 		flag=false
 	fi
 	# check the 5% 10% width/mass ratio
-	fn_2=$ans3; fn_3="decay length"; fn_4=$ans3_2
-	#decide which fn_1
+	fn_2=$ans3; fn_3="mass width/ mass"; fn_4=$ans3_2
+		#decide which is fn_1 and run compare_withError_fn
 	ten=`echo "$ans3 - 10"|bc`
 	five=`echo "$ans3 - 5"|bc`
 	if [ `echo "$five*$five < $ten*$ten"|bc` == 1 ]; then
@@ -222,12 +224,20 @@ function runRoot_fn {
 	fi
 	# cos theta check( if spin=0 )
 	if [ $spinflag == "1" ]; then
-		local fit=$(grep "fit" ./tmpfile.txt |cut -d ':' -f 2| tr -d ' ')
-		local fit1=$(echo $fit|cut -d '|' -f 1)
-		local fit2=$(echo $fit|cut -d '|' -f 2)
-		if [ `echo "$fit1*$fit1 > 0.5"|bc` -eq 1 ] || [ `echo "$fit2*$fit2 > 0.5"|bc` -eq 1 ] ;then
-			echo "cos theta* is not flat" >> detail.txt
-		else echo "cos theta* is flat" >> detail.txt
+		local cosflag=true
+		local fit=$(grep "fit" ./tmpfile.txt |cut -d ':' -f 2| tr -d ' '|tr '|' ' ')
+		for fit_t in $fit; do
+			local res=$(awk 'BEGIN{if ('$fit_t * $fit_t' > 0.5 ) print 1; else print 0}')
+			if [ `echo "$fit_t*$fit_t > 0.5"|bc` -eq 1 ] ;then
+				cosflag=false
+				break
+			fi
+		done
+		if [ $cosflag == true ]; then
+			echo "cos theta* is flat = true" >> detail.txt
+		else 
+			echo "cos theta* is not flat = false" >> detail.txt
+			flag=false
 		fi
 	fi
 	# setting mass width check
