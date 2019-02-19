@@ -1,0 +1,45 @@
+This file is use to modify the strings in python script
+the options will look like "#option: value", and only modify the words after the ":"
+if you let the options empty, it means pass that check.
+the explain can be see below all the settings.
+
+	part 1
+#lhaid: 320900
+#process: p p > h2 > H H
+
+	part 2
+#mass list: # mh02
+#mass compare value place: 4
+
+	part 3
+#PDF weight: 315200-315300 | 263400
+	part 4
+#want to run root analysis?(Y or N):y
+#mass width list: # wh02
+#place of the ExRootLHEFConverter: "/home/allen/programs/MG5_aMC_v2_6_2/ExRootAnalysis/ExRootLHEFConverter"
+
+
+	explains
+----------------------------------------------------------
+- part 2 setting mass check list 
+How to use:
+1. use "|" as delimiter 
+2. use the name in the lhe file/param cards
+(Ex:       4 0.000000e+00 # mc  -> so we choose # mc )
+(the multiple compare list Ex: #mgr | # mb )
+
+		*******************************************************************************************
+		* if the file name looks like:(use "_" as delimeter) 													*
+		* job_Zprime_A0h_A0chichi_MZp600_MA0300_slc6_amd64_gcc481_CMSSW_7_1_30_tarball.tar.xz.lhe	*
+		*  1    2     3     4       5      6     7     8     9      10  ...								*
+		* choose the mass compare place: 5 | 6   																	*
+		* for the check (mzp | ma0) setting mass value 															*
+		*******************************************************************************************
+----------------------------------------------------------
+- part 3 PDF weight check
+	Ex: 123-456 | 555 (it will see weather the PDF id from 123 to 456 and 555 exist or not)
+----------------------------------------------------------
+- part 4 root analysis 
+		if not run root, mass width/ kinetic test/ mother and duaghter mass test/ won't be done.
+	 	the ExRootConverter will run automatically. If you have already had the root file, please use the
+		same name as the lhe file and put it in the same directory.
