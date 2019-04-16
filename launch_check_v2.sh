@@ -111,14 +111,14 @@ function pdfWeightCheck_fn { # all the work in the PDF weight ID check
 				local min=$(echo $m|cut -d '-' -f 1)
 				local max=$(echo $m|cut -d '-' -f 2)			
 				for ((i=${min}; i<=${max}; i++)); do
-					local c=$(grep 'PDF="'$i'"' $aFile |cut -d ' ' -f 1) 	# get the line with the PDF id
+					local c=$(grep -c 'PDF="'$i'"' $aFile) 	# get the line with the PDF id
 					if [ -z $c ]; then					# see if it is a empty string
 						flag=false
 						echo -n " $i" >> detail.txt  # write the PDF id into detail.txt
 					fi
 				done
 			else # otherwise only check one id
-				c=$(grep 'PDF="'$m'"' $aFile |cut -d ' ' -f 1) # do the same thing like above
+				c=$(grep -c 'PDF="'$m'"' $aFile) # do the same thing like above
 				if [ -z $c ]; then
 					flag=false 
 					echo -n " $m" >> detail.txt
