@@ -120,7 +120,7 @@ function pdfWeightCheck_fn { # all the work in the PDF weight ID check
 			else # otherwise only check one id
 				c=$(grep 'PDF="'$m'"' $aFile |cut -d ' ' -f 1) # do the same thing like above
 				if [ -z $c ]; then
-					flag=false
+					flag=false 
 					echo -n " $m" >> detail.txt
 				fi
 			fi
