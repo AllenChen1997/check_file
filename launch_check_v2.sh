@@ -92,7 +92,11 @@ function settingMassCheck_fn { # all the work in setting mass compare
 			for j in $mCompaP; do
 				((i+=1))
 				fn_1=$(echo $aFile|sed -e "s:$place::g" |cut -d '_' -f $j |tr -d 'a-zA-Z')
+<<<<<<< HEAD
 				fn_3=$(echo $mList|cut -d ' ' -f $i)
+=======
+				fn_3=$(echo $mList|cut -d ' ' -f $j)
+>>>>>>> 8738872d661e59d7cfb9bd8ee098b016ef0d94ba
 				fn_2=$(grep "$(echo $fn_3|sed -e s/"#"/"# "/g)"$ $aFile |tr -s ' ' |cut -d ' ' -f 3) 
 				compare_fn
 			done	
@@ -111,16 +115,26 @@ function pdfWeightCheck_fn { # all the work in the PDF weight ID check
 				local min=$(echo $m|cut -d '-' -f 1)
 				local max=$(echo $m|cut -d '-' -f 2)			
 				for ((i=${min}; i<=${max}; i++)); do
+<<<<<<< HEAD
 					local c=$(grep 'PDF="'$i'"' $aFile |tr -d ' ') 	# get the line with the PDF id
+=======
+					local c=$(grep -c 'PDF="'$i'"' $aFile) 	# get the line with the PDF id
+>>>>>>> 8738872d661e59d7cfb9bd8ee098b016ef0d94ba
 					if [ -z $c ]; then					# see if it is a empty string
 						flag=false
 						echo -n " $i" >> detail.txt  # write the PDF id into detail.txt
 					fi
 				done
 			else # otherwise only check one id
+<<<<<<< HEAD
 				c=$(grep 'PDF="'$m'"' $aFile |tr -d ' ') # do the same thing like above
 				if [ -z $c ]; then
 					flag=false
+=======
+				c=$(grep -c 'PDF="'$m'"' $aFile) # do the same thing like above
+				if [ -z $c ]; then
+					flag=false 
+>>>>>>> 8738872d661e59d7cfb9bd8ee098b016ef0d94ba
 					echo -n " $m" >> detail.txt
 				fi
 			fi

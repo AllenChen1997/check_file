@@ -122,7 +122,7 @@ TRootLHEFParticle::TRootLHEFParticle(TTree *tree) : fChain(0)
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   string fileName = "./testLHEfile/BulkGraviton_hh_5perWidth_M2200.root";
+   string fileName = "./unit_test/BulkGraviton_hh_5perWidth_M2400_slc6_amd64_gcc481_CMSSW_7_1_30_tarball_test.root";
     if (tree == 0) {
       TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(fileName.data());
       if (!f || !f->IsOpen()) {

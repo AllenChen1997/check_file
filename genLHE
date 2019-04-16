@@ -1,0 +1,89 @@
+#! /usr/bin/env python
+#-------------------------------------------------------------
+# File: genText.py
+# Created: 8 Oct 2018 Kong-Xiang Chen
+# Ref: genText.py created by Shu-Xiao Liu (12 May 2017)
+#-------------------------------------------------------------  
+import glob
+import errno
+from ROOT import TGraph, TFile, TCanvas, TH2F, gStyle
+
+from ROOT import TGraph2D, TGaxis
+from array import array
+import os
+import csv
+class GetValue():
+    def __init__(self):
+    	self.fileNum = []
+    	self.lhaid = []
+    	self.gener = []
+    	self.wh = []
+
+hAList = []
+hApath = '/home/allen/documents/check_lhe_files/testLHEfile/FOLDERNAME*.lhe' 
+hA_files = glob.glob(hApath) 
+
+# Some define of func.
+def getFile(fileName):
+		num = str(fileName).split("_")[2].split('/')[2]
+		global s
+		s = GetValue()
+		s.fileNum = num
+		#print s.fileNum
+		return s
+
+def getLHAID(readLine):
+	LHAID = int(readLine.strip().split('=')[0])
+	#print LHAID
+	return LHAID
+
+def getG(readLine):
+	pros = readLine.strip().split('generate')[1]
+	#print pros
+	return pros
+
+def getWH(readLine):
+	WH = readLine.strip().split('25')[1].split('#')[0]
+	return WH	
+
+# setting some selections that help you find the values
+def gethAList(lhefile):
+        hAList = []
+	for name in lhefile: 
+		s = getFile(name)
+	    	try:
+	    	    with open(name) as f: 
+	    	    	for lheFile in f:
+	    	    		if lheFile.find('mzp') > 0 and lheFile.find('32') > 0:
+	    	    			s.zpMass = getMZpValue(lheFile)
+	    	    		elif lheFile.find('lhaid') > 0:
+	    	    			s.lhaid = getLHAID(lheFile)
+	    	    		elif lheFile.find('generate') == 0:
+	    	    			s.gener = getG(lheFile)
+	    	    		elif lheFile.find('DECAY') == 0 and lheFile.find('25') > 0:
+	    	    			s.wh = getWH(lheFile)
+					hAList.append(s)
+	    	except IOError as exc:
+	    	    if exc.errno != errno.EISDIR: 
+	    	        raise 
+	return hAList
+
+def main():
+	hAList = gethAList(hA_files)
+	textLine = []
+	compare = [0,0,0,0]
+	title=["fileName","LHAID","process","wh"]
+	for a in hAList:
+		flag = False
+		if (int(a.lhaid)==int(compare[1])and float(a.wh)==float(compare[3])):
+			flag = True 
+			textLine.append("true")
+		if (flag==False): 
+			textLine.append([a.fileNum, a.lhaid, a.gener, a.wh])
+			compare=[a.fileNum, a.lhaid, a.gener, a.wh]
+	with open("FOLDERNAME_scan.txt", "w") as f:
+		wr = csv.writer(f,delimiter="\t")
+		wr.writerow(title)
+		wr.writerows(textLine)
+if __name__ == "__main__":
+   main()
