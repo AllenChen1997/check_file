@@ -3,9 +3,10 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+
 #define motherPID 35
-#define min 200
-#define max 2200
+#define min 0
+#define max 2000
 #define docostheta 1
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
@@ -215,7 +216,7 @@ if ( docostheta == 1 ){
 	int a = h_hhM->GetBinLowEdge(h_hhM->GetMaximumBin())+h_hhM->GetBinWidth(h_hhM->GetMaximumBin())/2.0;
 	int b = h_motherM->GetBinLowEdge(h_motherM->GetMaximumBin())+h_motherM->GetBinWidth(h_motherM->GetMaximumBin())/2.0;
 	if ( (a-b) < 15 )	myfile << "mass test: true\n";
-	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b;
+	else myfile << "mass test: False" << " |motherM = " << a << " |higgs mass:" << b << std::endl;
 	myfile << "mother particle is " << z*100 << " + " << err*100 << "\n";
 	myfile << "mass width = " << width.getVal() << " + " << width.getError() << "\n";
 	if ( docostheta == 1 ){
