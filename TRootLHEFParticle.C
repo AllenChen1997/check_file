@@ -168,6 +168,13 @@ void TRootLHEFParticle::Loop()
 int kineResultFM = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
 
+string pdfName = "Radion_hh_width0p10_M1000_slc6_amd64_gcc481_CMSSW_7_1_30_tarball_presys.pdf";
+   TCanvas *c1 = new TCanvas("c1","c1",3);
+   c1->Print((pdfName+"[").data());
+   h_nH->Draw("hist text 0");
+   c1->Print(pdfName.data());
+   h_hhM->Draw("hist");
+   c1->Print(pdfName.data());
 // RooFit
 // fit mother particle mass
    using namespace RooFit;
@@ -188,7 +195,11 @@ int kineResultF = h_count->GetBinContent(2);
    fitFun.paramOn(xframe,Layout(0.5,0.9,0.9));
    //fitFun.paramOn(xframe,mean,width);
 	//new TCanvas;
-	//xframe->Draw();
+	xframe->Draw();
+   c1->SetLeftMargin(0.15);
+   c1->Print(pdfName.data());
+   
+
 // fit costheta*
 //int docostheta = 1;
 
@@ -206,7 +217,11 @@ if ( docostheta == 1 ){
 	fitFun2.plotOn(xframe2) ;
 	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
 	//new TCanvas;
-	//xframe2->Draw();	
+	h_cos->Draw();
+	c1->Print(pdfName.data());
+	xframe2->Draw();	
+	c1->Print(pdfName.data());
+   c1->Print((pdfName+"]").data());
 	//std::cout << p2.getError() << "this is test" << std::endl;
 }
 // save all plots into PDF/txt

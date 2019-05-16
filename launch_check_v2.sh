@@ -172,6 +172,7 @@ function runRoot_fn {
 	fi
 	echo "start root analysis in $aRoot "
 
+	sed -i '/string pdfName/c string pdfName = "'`echo $aFile|cut -d "/" -f 2|cut -d "." -f 1`'.pdf";' TRootLHEFParticle.C
 	# change the define of mother PID/ min/ max / docostheta in .C file 
 	sed -i "/#define motherPID/c #define motherPID ${SetID}" ./TRootLHEFParticle.C  # use new line replace the old line	
 		# find the setting mass
@@ -285,4 +286,9 @@ echo " " >> ${saveName}.txt ; echo "these are the comparing detail: " >> ${saveN
 grep '' ./detail.txt >> ${saveName}.txt # put all the content in the detail.txt into save file
 rm ./detail.txt ./tmpfile.txt # delete two necessary file
 echo "${saveName}.txt has build"
+if [ ! -d saved_pdf ]; then
+	mkdir saved_pdf/
+fi
+mv *.pdf ./saved_pdf/
+echo "all the pdfs are saved in ./saved_pdf/"
 echo "process done"
