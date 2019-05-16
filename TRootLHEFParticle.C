@@ -207,7 +207,7 @@ if ( docostheta == 1 ){
 	fitFun2.paramOn(xframe2,Layout(0.5,0.9,0.9));
 	//new TCanvas;
 	//xframe2->Draw();	
-	std::cout << p2.getError() << "this is test" << std::endl;
+	//std::cout << p2.getError() << "this is test" << std::endl;
 }
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
