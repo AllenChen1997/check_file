@@ -194,7 +194,7 @@ function runRoot_fn {
 	sed -i '/string fileName/c \   \string fileName = "'${aRoot}'";' ./TRootLHEFParticle.h # change which file need to run in .h file
 	# open the root and automatically send the commands
 	expect -c '
-			  spawn -noecho root -l TRootLHEFParticle.C
+			  spawn -noecho root -b TRootLHEFParticle.C
 	        send "TRootLHEFParticle t\r"
 			  send "t.Loop()\r"
 	        send ".q\r"
@@ -263,13 +263,17 @@ function runRoot_fn {
 echo "Start process"
 define_variables_fn # call the function defined above
 build_file_fn
+n=0;
 # check all files
+total=`echo $filename |wc -w`
 for aFile in $filename; do  # pick the directory to the lhe one by one in the loop
 	flag=true # use for expressing the compare state
 	if [ -z $SetID ];then 
 		findPID_fn
 	fi
 	echo "< $aFile >" >> detail.txt
+	((n+=1))
+	echo "file # $n from total $total files"
 	settingMassCheck_fn
 	pdfWeightCheck_fn
 	defaultCheck_fn

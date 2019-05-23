@@ -48,7 +48,7 @@ void TRootLHEFParticle::Loop()
 	TH1F *h_higgsPz[3];
 	TH1F *h_higgsP[3];
    TH1F *h_higgsRap[3];
-   TH1F *h_nH = new TH1F("h_nH","h_nH",8,-0.5,7.5);
+   TH1F *h_nH = new TH1F("h_nM","h_nM",4,0,4);
    TH1F *h_hhDeltaR = new TH1F("h_hhDeltaR","h_hhDeltaR",60,2,5);
    TH1F *h_hhM = new TH1F("h_hhNewResonanceM","h_hhNewResonanceM",100,min,max);
 	TH1F *h_hheta = new TH1F("h_hhDeltaEta","h_hhDeltaEta",40,0,10);
@@ -168,7 +168,7 @@ void TRootLHEFParticle::Loop()
 int kineResultFM = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
 
-string pdfName = "Radion_hh_width0p10_M1000_slc6_amd64_gcc481_CMSSW_7_1_30_tarball_presys.pdf";
+string pdfName = "Radion_hh_width0p10_M1000_slc6_amd64_gcc481_CMSSW_7_1_30_tarball_final.pdf";
    TCanvas *c1 = new TCanvas("c1","c1",3);
    c1->Print((pdfName+"[").data());
    h_nH->Draw("hist text 0");
