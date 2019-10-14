@@ -2,7 +2,7 @@
 # fileName launch_genLHE
 # built by Kong-Xiang Chen
 # Date 2019/02/19
-# need to run with magicCard.txt, TRootLHEFParticle.C TRootLHEFParticle.h
+# need to run with magicCard_v2.txt, TRootLHEFParticle.C TRootLHEFParticle.h
 #############################
 ## load some function
 # function called by function

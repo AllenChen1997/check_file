@@ -4,10 +4,10 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
-#define motherPID 35
+#define motherPID 39
 #define min 0
-#define max 2000
-#define docostheta 1
+#define max 6500
+#define docostheta 0
 
 float kinePP(float m1, float m2, float M){ //this is use to get daughter particles' momentum by mass (1->2 process)
 	float pp;
@@ -168,7 +168,11 @@ void TRootLHEFParticle::Loop()
 int kineResultFM = h_count->GetBinContent(1);
 int kineResultF = h_count->GetBinContent(2);
 
+<<<<<<< HEAD
+string pdfName = "cmsgrid_final.pdf";
+=======
 string pdfName = "Radion_hh_width0p10_M1000_slc6_amd64_gcc481_CMSSW_7_1_30_tarball_final.pdf";
+>>>>>>> 15a59d4dd517054d414586f28007e066ad8c202c
    TCanvas *c1 = new TCanvas("c1","c1",3);
    c1->Print((pdfName+"[").data());
    h_nH->Draw("hist text 0");
@@ -181,7 +185,7 @@ string pdfName = "Radion_hh_width0p10_M1000_slc6_amd64_gcc481_CMSSW_7_1_30_tarba
    RooRealVar x("x","new Resonance (GeV)",min,max);
    RooDataHist data("data","new Resonance",x,h_hhM);
    RooRealVar mean("mean","mean",min,max);
-   RooRealVar width("width","width",0,500);
+   RooRealVar width("width","width",0,3000);
    RooBreitWigner fitFun("fit","fit",x,mean,width);
    fitFun.fitTo(data);
    RooPlot* xframe = x.frame();
@@ -221,9 +225,9 @@ if ( docostheta == 1 ){
 	c1->Print(pdfName.data());
 	xframe2->Draw();	
 	c1->Print(pdfName.data());
-   c1->Print((pdfName+"]").data());
 	//std::cout << p2.getError() << "this is test" << std::endl;
 }
+   c1->Print((pdfName+"]").data());
 // save all plots into PDF/txt
    ofstream myfile("tmpfile.txt");
 	if ( kineResultF == kineResultFM ) myfile << "kinetic test: true\n";
